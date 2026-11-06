@@ -108,6 +108,7 @@ export async function runAction(s: Session, a: Action): Promise<Record<string, u
       if (!s.setup) throw new ActionError('Answer the setup questions first.')
       s.setup.strengths = a.strengths
       s.setup.confirmed = true
+      s.report = null // the report quotes confirmed strengths, so regenerate it
       completeRoom(s, 'setup')
       return {}
     }

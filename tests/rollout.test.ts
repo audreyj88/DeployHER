@@ -26,3 +26,12 @@ test('"No rule" cancels other rules and pre-mortem is scored', () => {
   assert.equal(r.premortemCorrect, 2)
   assert.ok(r.notes.some((n) => n.includes('finish line')))
 })
+
+import { draftStrengths } from '../src/lib/skills-map.ts'
+
+test('skills map: "built a rubric" is not engineering; "built two AI tools" is', () => {
+  const t = draftStrengths('Teacher, designed assessments', 'Built a grading rubric', 'new').map((s) => s.id)
+  assert.ok(!t.includes('building'))
+  const e = draftStrengths('Software engineer, built two AI tools', 'Shipped a feature', 'built').map((s) => s.id)
+  assert.ok(e.includes('building'))
+})

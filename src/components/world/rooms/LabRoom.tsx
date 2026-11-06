@@ -38,8 +38,13 @@ function signTex(s: (typeof STATIONS)[number], ghost: boolean) {
   return canvasTex(`lab:sign:${s.key}:${ghost}`, 320, 150, (g, w, h) => {
     g.clearRect(0, 0, w, h)
     roundRect(g, 4, 4, w - 8, h - 8, 22)
-    g.fillStyle = ghost ? 'rgba(241,245,249,0.85)' : k.bg
+    g.fillStyle = ghost ? 'rgba(241,245,249,0.85)' : '#FFFFFF'
     g.fill()
+    if (!ghost) {
+      roundRect(g, 4, 92, w - 8, h - 96, 0)
+      g.fillStyle = k.bg
+      g.fill()
+    }
     g.lineWidth = 5
     g.strokeStyle = ghost ? '#94A3B8' : k.color
     if (ghost) g.setLineDash([14, 10])
@@ -50,10 +55,10 @@ function signTex(s: (typeof STATIONS)[number], ghost: boolean) {
     g.globalAlpha = ghost ? 0.45 : 1
     g.fillText(s.icon, 22, 60)
     g.fillStyle = ghost ? '#64748B' : k.ink
-    g.font = '800 30px system-ui, sans-serif'
+    g.font = '800 34px system-ui, sans-serif'
     g.fillText(s.label, 86, 60, w - 100)
-    g.font = '800 19px system-ui, sans-serif'
-    g.fillStyle = ghost ? '#94A3B8' : k.color
+    g.font = '900 24px system-ui, sans-serif'
+    g.fillStyle = ghost ? '#94A3B8' : k.ink
     g.fillText(ghost ? 'NOT BUILT YET' : k.tag, 24, 116)
     g.globalAlpha = 1
   })

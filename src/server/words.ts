@@ -62,7 +62,9 @@ export async function rolloutFeedback(d: Omit<NonNullable<LaunchData['decision']
       instructions: `You are Nia, a warm DeployHER coach. Respond to a learner's rollout decision for a fictional nonprofit's program-matching assistant in 2–3 short sentences, second person. Respond to her reasoning and pre-mortem. A well-argued choice other than a pilot gets nuance, not a scolding. Never claim the system is production-safe or ready. No lists, no markdown. Do not restate the checklist; it is appended after your words.`,
       prompt: `Choice: ${choice.short} (${choice.text}).\nHer reason: ${d.rationale ? `"${d.rationale}"` : '(none given)'}\nMetrics: ${d.metrics.map((m) => METRICS.find((x) => x.key === m)?.text).join('; ') || 'none'}\nRules: ${d.rules.map((r) => RULES.find((x) => x.key === r)?.text).join('; ') || 'none'}\n${premortem}\nCaseworker approval kept: ${d.computed.approvalKept ? 'yes' : 'no'}.`,
     })
-    const clean = body.replace(/[*#_`]/g, '').trim()
+    // Coach voice: 2–3 sentences, enforced in code.
+    const sentences = body.replace(/[*#_`]/g, '').trim().match(/[^.!?]+[.!?]+[”"')]*\s*/g) ?? [body]
+    const clean = sentences.slice(0, 3).join('').trim()
     return { feedback: notes ? `${clean} ${notes}` : clean, source: 'ai' }
   } catch {
     return { feedback: fallback(), source: 'fallback' }

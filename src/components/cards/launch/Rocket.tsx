@@ -25,13 +25,13 @@ export function MiniRocket({ state, size = 120 }: { state: RocketState; size?: n
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <path key={i} d={`M${22 + i * 14} 152 l6 4 l-6 4 h-4 l6 -4 l-6 -4 z`} fill="#FBBF24" />
       ))}
-      {/* flame */}
-      <g className="rkt-flame">
-        <path d="M50 132 Q60 168 70 132 Z" fill="#FB923C" />
-        <path d="M54 132 Q60 156 66 132 Z" fill="#FDE68A" />
-      </g>
       {/* ship */}
       <g className="rkt-ship">
+        {/* flame rides with the ship */}
+        <g className="rkt-flame">
+          <path d="M50 132 Q60 168 70 132 Z" fill="#FB923C" />
+          <path d="M54 132 Q60 156 66 132 Z" fill="#FDE68A" />
+        </g>
         <path d="M40 112 L30 132 L44 128 Z" fill="#C8475D" />
         <path d="M80 112 L90 132 L76 128 Z" fill="#C8475D" />
         <path d="M60 22 C76 40 80 70 78 126 L42 126 C40 70 44 40 60 22 Z" fill={`url(#b${id})`} stroke="#CBD5E1" strokeWidth="1" />

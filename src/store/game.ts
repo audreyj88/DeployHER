@@ -77,7 +77,8 @@ export const useGame = create<GameState>((set, get) => ({
       const j = await r.json().catch(() => ({ error: 'The server sent an unexpected reply.' }))
       if (!r.ok) throw new Error(j.error || `Request failed (${r.status})`)
       const prev = get().session
-      if (prev && j.session.stage !== prev.stage && get().inside) set({ finishedAt: Date.now() })
+      // Finishing a room pulls the camera back to the map — except the final room, where you stay to read.
+      if (prev && j.session.stage !== prev.stage && j.session.stage !== 'complete' && get().inside) set({ finishedAt: Date.now() })
       set({ session: j.session })
       return j
     } finally {

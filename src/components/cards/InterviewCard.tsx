@@ -525,7 +525,7 @@ function InterviewInner() {
   return (
     <CardShell place="interview" className="card-interview" onClose={isLive || phase === 'typed' ? undefined : close}>
       <div className="grid sm:grid-cols-[320px_1fr]" style={{ height: 'min(620px, calc(100dvh - 90px))' }}>
-        <div className="flex flex-col">
+        <div className="flex flex-col" style={{ background: '#061A22' }}>
           <MayaScene
             speaking={speaking}
             live={connected}

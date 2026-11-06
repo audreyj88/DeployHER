@@ -63,19 +63,20 @@ function archPoint(t: number, z: number, out = new THREE.Vector3()) {
   return out.set(ARCH_X * Math.cos(a), POST_H + RISE * Math.sin(a), z)
 }
 
-function Arches() {
+function Arches({ zs }: { zs: number[] }) {
   const bulbs = useMemo(() => {
     const pts: THREE.Vector3[] = []
-    for (const z of ARCH_Z) {
+    for (const z of zs) {
       for (let i = 1; i < 18; i++) pts.push(archPoint(i / 18, z).add(new THREE.Vector3(0, -0.08, 0)))
       for (const s of [-1, 1]) for (let k = 0; k < 4; k++) pts.push(new THREE.Vector3(s * ARCH_X, 0.6 + k * 0.45, z + 0.08))
     }
     return pts
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zs.join()])
   const vines = useMemo(() => {
     const pts: THREE.Vector3[] = []
-    const r = mulberry32(7)
-    for (const z of ARCH_Z) {
+    const r = mulberry32(7 + zs.length)
+    for (const z of zs) {
       for (let i = 0; i <= 40; i++) {
         const v = archPoint(i / 40, z)
         pts.push(v.add(new THREE.Vector3((r() - 0.5) * 0.15, (r() - 0.5) * 0.15, (r() - 0.5) * 0.2)))
@@ -83,12 +84,13 @@ function Arches() {
       for (const s of [-1, 1]) for (let k = 0; k < 10; k++) pts.push(new THREE.Vector3(s * ARCH_X + (r() - 0.5) * 0.2, 0.3 + k * 0.2, z + (r() - 0.5) * 0.2))
     }
     return pts
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zs.join()])
   const bulbRef = useRef<THREE.InstancedMesh>(null)
   const d = useMemo(() => new THREE.Object3D(), [])
   return (
     <group>
-      {ARCH_Z.map((z) => (
+      {zs.map((z) => (
         <group key={z}>
           {[-1, 1].map((s) => (
             <mesh key={s} position={[s * ARCH_X, POST_H / 2, z]} castShadow>
@@ -428,7 +430,10 @@ export function Greenhouse() {
   ])
   return (
     <RoomShell id={ID} floor={floor} glass="#F0FDF4" glassOpacity={0.14} plants={false} bench={false} board={board} boardAt={{ position: [-5.3, 1.45, 3.3], rotationY: Math.PI }}>
-      <Arches />
+      <Arches zs={ARCH_Z.slice(0, 3)} />
+      <HideInside place={ID}>
+        <Arches zs={ARCH_Z.slice(3)} />
+      </HideInside>
       <Planter x={0} z={-5.4} w={14.6} d={0.9} count={170} seed={1} />
       <Planter x={-7.4} z={-0.7} w={0.9} d={8.4} count={100} seed={2} />
       <Planter x={7.4} z={-0.7} w={0.9} d={8.4} count={100} seed={3} />

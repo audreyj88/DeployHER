@@ -14,7 +14,7 @@ const RULES: Rule[] = [
   { id: 'evaluation', re: /assess|grading|exam|rubric|test|qa|quality|audit|evaluat|inspect/i, label: 'Judging quality against a standard', application: 'Checking an AI system’s outputs against clear rules, case by case.' },
   { id: 'teaching', re: /teach|tutor|train(ing|er)|coach|mentor|curricul|lesson|educat/i, label: 'Explaining complex ideas simply', application: 'Helping staff understand what an AI tool can and can’t do.' },
   { id: 'numbers', re: /account|financ|bookkeep|budget|data|analy|statist|spreadsheet|excel|econom|math/i, label: 'Careful work with numbers and data', application: 'Defining metrics and spotting when results don’t add up.' },
-  { id: 'building', re: /software|engineer|develop|program|cod(e|ing)|python|built|app|pipeline|agent/i, label: 'Building and debugging systems', application: 'Finding exactly where an AI pipeline breaks and fixing it.' },
+  { id: 'building', re: /software|engineer|developer|programm(er|ing)|\bcod(e|ed|ing)\b|python|javascript|built (an? |two |three |my |our )?(apps?|tools?|websites?|models?|systems?|pipelines?|agents?|bots?)|pipeline|\bagents?\b|\bAI tools?\b/i, label: 'Building and debugging systems', application: 'Finding exactly where an AI pipeline breaks and fixing it.' },
   { id: 'people', re: /customer|client|patient|nurs|retail|service|sales|support|volunteer|community|nonprofit|care/i, label: 'Understanding the people a tool serves', application: 'Keeping real users in mind when deciding how a tool should roll out.' },
   { id: 'writing', re: /writ|edit|communicat|policy|law|legal|contract|document/i, label: 'Writing clear, precise rules', application: 'Turning a client’s needs into acceptance criteria a system can be tested against.' },
 ]

@@ -1,4 +1,5 @@
 'use client'
+import { getTagLayer } from '../Tag'
 // Room name tags above each door. The next room's tag sticks to the screen edge like a quest marker.
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
@@ -30,8 +31,8 @@ export function DoorTags() {
   useEffect(() => {
     // A body-level overlay (not inside React-managed canvas wrappers) aligned with the full-screen canvas.
     const div = document.createElement('div')
-    div.style.cssText = 'position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1'
-    document.body.appendChild(div)
+    div.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden'
+    getTagLayer().appendChild(div)
     const r = createRoot(div)
     setRoot(r)
     return () => {

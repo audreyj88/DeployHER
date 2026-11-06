@@ -10,14 +10,9 @@ export type TagKind = 'name' | 'ai' | 'you' | 'lab'
 
 const v = new THREE.Vector3()
 
-let overlay: HTMLDivElement | null = null
-function getOverlay() {
-  if (overlay && document.body.contains(overlay)) return overlay
-  overlay = document.createElement('div')
-  overlay.className = 'tag-overlay'
-  Object.assign(overlay.style, { position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: '10', overflow: 'hidden' })
-  document.body.appendChild(overlay)
-  return overlay
+/** Shared DOM layer for 3D tags: above the canvas, below the HUD and cards. */
+export function getTagLayer(): HTMLElement {
+  return document.getElementById('dh-tags') ?? document.body
 }
 
 /** Flatten simple React nodes (strings, numbers, <span>✓</span>) to text. */
@@ -62,7 +57,7 @@ export function Tag({
   // Mount / unmount the element.
   useEffect(() => {
     if (!el) return
-    getOverlay().appendChild(el)
+    getTagLayer().appendChild(el)
     return () => el.remove()
   }, [el])
 

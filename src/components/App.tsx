@@ -23,6 +23,7 @@ export default function App() {
           <World />
         </WorldBoundary>
       )}
+      <div id="dh-tags" className="pointer-events-none fixed inset-0 z-[5] overflow-hidden" />
       {loaded && <Hud />}
       {loaded && <Cards />}
       {!loaded && (
