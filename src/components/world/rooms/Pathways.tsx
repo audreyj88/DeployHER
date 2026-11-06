@@ -1,5 +1,5 @@
 'use client'
-// Pathways Forward (Discover): a warm brick community career centre. Not the glass shell.
+// Next Chapter (Discover): a warm brick community career centre. Not the glass shell.
 import { RoundedBox } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useLayoutEffect, useMemo, useRef } from 'react'
@@ -140,10 +140,10 @@ function signTextures() {
     g.restore()
     g.fillStyle = C.deep
     g.font = '800 46px system-ui, sans-serif'
-    g.fillText('Pathways Forward', 132, 70)
+    g.fillText('Next Chapter', 132, 70)
     g.fillStyle = C.teal
     g.font = '600 22px system-ui, sans-serif'
-    g.fillText('Career & training centre', 134, 102)
+    g.fillText('Return-to-work centre', 134, 102)
   })
   const inside = canvasTex('pf:sign:in', 512, 128, (g, w, h) => {
     const sky = g.createLinearGradient(0, 0, 0, h)
@@ -348,14 +348,14 @@ function spreadsheetTex() {
 }
 
 const FLYERS: [string, string, string][] = [
-  ['FREE CODING CLASS', 'Evenings · Tue & Thu', '#FFFFFF'],
-  ['RESUME WORKSHOP', 'Saturday 10am', '#FDE68A'],
-  ['CNA TRAINING', 'Scholarships available', '#BFE8E1'],
+  ['RETURNSHIPS OPEN', 'Ask your caseworker', '#FFFFFF'],
+  ['RESUME GAP CLINIC', 'Thursdays 10am', '#FDE68A'],
+  ['FLEXIBLE JOBS', 'School-hours roles', '#BFE8E1'],
   ['VOLUNTEER WITH US!', 'Mentors needed', '#FBCFE8'],
   ['CHILDCARE HELP', 'Ask at the front desk', '#FFFFFF'],
   ['THANK YOU,', 'volunteers & donors ♥', '#FED7AA'],
-  ['MEDICAL BILLING', 'Online · self-paced', '#DBEAFE'],
-  ['BUS PASSES', 'for students', '#FFFFFF'],
+  ['REMOTE ROLES', 'New partners this month', '#DBEAFE'],
+  ['INTERVIEW PREP', 'Drop-in · Tuesdays', '#FFFFFF'],
 ]
 
 function bulletinTex() {
@@ -867,7 +867,7 @@ export function Pathways() {
     <group>
       <mesh rotation-x={-Math.PI / 2} position-y={0.006} receiveShadow>
         <planeGeometry args={[ROOM_W, ROOM_D]} />
-        <meshStandardMaterial map={floor} roughness={0.8} polygonOffset polygonOffsetFactor={-1} />
+        <meshStandardMaterial map={floor} roughness={0.8} />
       </mesh>
       <BackWall />
       <SteelGlassRun from={[-HW, -HD]} to={[-HW, HD]} />

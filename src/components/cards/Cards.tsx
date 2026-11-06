@@ -13,6 +13,20 @@ import { SidePanel } from './SidePanel'
 /** Rooms whose finished state is shown in the side panel rather than a card. */
 const PANEL_WHEN_DONE: PlaceId[] = ['setup', 'interview', 'debrief']
 
+/** Demo shortcut: unlock a locked room (skipping the rooms before it) and walk straight in. */
+export async function unlockRoom(id: PlaceId) {
+  const g = useGame.getState()
+  if (!g.session || roomStatus(g.session, id) !== 'locked') return
+  try {
+    await g.act({ type: 'unlock', place: id })
+  } catch (e) {
+    g.set({ error: e instanceof Error ? e.message : 'Couldn’t unlock that room.' })
+    return
+  }
+  g.set({ card: null, panel: null, seatedAt: null, nearLocked: null })
+  g.walkTo({ kind: 'room', id })
+}
+
 /** Decide what opens when you walk into a room. Exported so the world/HUD can reuse it. */
 export function openRoomUI(id: PlaceId) {
   const g = useGame.getState()

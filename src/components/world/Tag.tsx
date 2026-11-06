@@ -5,6 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { isValidElement, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { camInfo, player } from './state'
+import { iconSvg, type IconNode } from './lucide'
 
 export type TagKind = 'name' | 'ai' | 'you' | 'lab'
 
@@ -15,7 +16,7 @@ export function getTagLayer(): HTMLElement {
   return document.getElementById('dh-tags') ?? document.body
 }
 
-/** Flatten simple React nodes (strings, numbers, <span>✓</span>) to text. */
+/** Flatten simple React nodes (strings, numbers, <span>text</span>) to text. */
 function toText(n: ReactNode): string {
   if (n == null || typeof n === 'boolean') return ''
   if (typeof n === 'string' || typeof n === 'number') return String(n)
@@ -43,7 +44,8 @@ export function Tag({
   position?: [number, number, number]
   accent?: string
   talking?: boolean
-  icon?: ReactNode
+  /** A Lucide icon (from the vanilla `lucide` package), shown before the text. */
+  icon?: IconNode
   extra?: string
   alwaysVisible?: boolean
 }) {
@@ -51,7 +53,6 @@ export function Tag({
   const { camera, gl } = useThree()
   const el = useMemo(() => (typeof document === 'undefined' ? null : document.createElement('div')), [])
   const label = toText(text)
-  const iconText = toText(icon)
   const fades = !alwaysVisible && (kind === 'name' || kind === 'ai' || kind === 'lab')
 
   // Mount / unmount the element.
@@ -74,16 +75,16 @@ export function Tag({
       c.className = 'chip'
       el.appendChild(c)
     }
-    if (iconText) {
+    if (icon) {
       const i = document.createElement('span')
-      i.textContent = iconText
+      i.innerHTML = iconSvg(icon) // static icon data from our own bundle, never user input
       el.appendChild(i)
     }
     const t = document.createElement('span')
     t.textContent = label
     el.appendChild(t)
     if (accent) el.style.setProperty('--accent', accent)
-  }, [el, label, iconText, talking, kind, accent])
+  }, [el, label, icon, talking, kind, accent])
 
   const baseClass = `lbl lbl-${kind} ${talking ? 'talk' : ''} ${extra}`
 

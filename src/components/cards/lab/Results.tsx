@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { FAILURE_TEXT, programById } from '@/lib/catalog'
+import { FileText, Scale, Sparkles, Wrench } from 'lucide-react'
+import { FAILURE_TEXT, jobById } from '@/lib/catalog'
 import type { CaseResult, LabRun, SessionView } from '@/lib/types'
 import { Avatar, VerdictPill, WeekStrip, describeAnswer, findApplicant, needsText } from './shared'
 
@@ -25,7 +26,7 @@ export function ScoreRow({ run, label }: { run: LabRun; label?: string }) {
 export function CaseRow({ r, s, defaultOpen }: { r: CaseResult; s: SessionView; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(Boolean(defaultOpen))
   const a = findApplicant(s, r.applicantId, r.name)
-  const prog = r.answer?.programId ? programById(r.answer.programId) : null
+  const prog = r.answer?.jobId ? jobById(r.answer.jobId) : null
   return (
     <div className={`overflow-hidden rounded-2xl border bg-white transition ${open ? 'border-slate-300 shadow-sm' : 'border-slate-200'}`}>
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50/70">
@@ -53,7 +54,7 @@ export function CaseRow({ r, s, defaultOpen }: { r: CaseResult; s: SessionView; 
               {r.failures.map((f) => FAILURE_TEXT[f]).join(' ')}
             </div>
           )}
-          {r.failures.includes('schedule_conflict') && a && prog && <WeekStrip applicant={a} program={prog} compact />}
+          {r.failures.includes('schedule_conflict') && a && prog && <WeekStrip applicant={a} job={prog} compact />}
           <div>
             <div className="mb-1.5 text-[11px] font-bold uppercase tracking-[.14em] text-slate-500">Inside the agent</div>
             <ol className="space-y-1">
@@ -68,7 +69,11 @@ export function CaseRow({ r, s, defaultOpen }: { r: CaseResult; s: SessionView; 
                     style={{ background: bad ? '#FEE2E2' : st.kind === 'ai' ? '#F5F3FF' : st.kind === 'code' ? '#F0F9FF' : '#F8FAFC', boxShadow: bad ? 'inset 0 0 0 1.5px #EF4444' : undefined }}
                   >
                     <span className="w-[86px] shrink-0 text-[9.5px] font-bold uppercase tracking-wide" style={{ color: st.kind === 'ai' ? '#6D28D9' : st.kind === 'code' ? '#0369A1' : '#475569' }}>
-                      {st.kind === 'ai' ? '✨ AI model' : st.kind === 'code' ? '🔧 Code' : '📝 Output'}
+                      {(() => {
+                        const K = st.kind === 'ai' ? Sparkles : st.kind === 'code' ? Wrench : FileText
+                        return <K size={10} className="mr-1 inline align-[-0.1em]" />
+                      })()}
+                      {st.kind === 'ai' ? 'AI model' : st.kind === 'code' ? 'Code' : 'Output'}
                     </span>
                     <span className="min-w-0 flex-1">
                       <b className="text-slate-800">{st.label}</b>
@@ -89,7 +94,8 @@ export function CaseRow({ r, s, defaultOpen }: { r: CaseResult; s: SessionView; 
 export function GraderNote() {
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[12px] text-slate-600">
-      ⚖️ The grader isn’t part of the agent. It’s plain code that checks every answer against the client’s rules, so the AI can’t grade itself.
+      <Scale size={13} className="mr-1 inline align-[-0.15em]" />
+      The grader isn’t part of the agent. It’s plain code that checks every answer against the client’s rules, so the AI can’t grade itself.
     </div>
   )
 }

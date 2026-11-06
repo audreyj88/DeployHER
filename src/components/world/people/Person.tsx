@@ -1,5 +1,6 @@
 'use client'
 // Standing NPC with walk / talk / idle motion. Glides to new positions at 1.6 m/s.
+import type { IconNode } from '../lucide'
 import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
@@ -39,7 +40,7 @@ export function Person({
   tagAccent?: string
   tagKind?: 'name' | 'ai' | 'lab'
   tagExtra?: string
-  tagIcon?: React.ReactNode
+  tagIcon?: IconNode
   scale?: number
 }) {
   const root = useRef<THREE.Group>(null)

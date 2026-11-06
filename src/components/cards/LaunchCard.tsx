@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { Ban, Check, Circle, CircleHelp, CirclePause, Lock, Mail, OctagonX, Meh, Rocket, TrendingUp, UserCheck, type LucideIcon } from 'lucide-react'
 import { stageIndex } from '@/lib/places'
 import { CHOICES, MAYA_ROLLOUT_LINE, METRICS, PREMORTEM, RULES } from '@/lib/rollout'
 import type { MetricKey, PremortemKey, RolloutChoice, RolloutComputed, RuleKey, SessionView } from '@/lib/types'
@@ -17,7 +18,11 @@ const STEPS = [
   { key: 'launch', label: 'Launch' },
 ]
 const MODE_COLOR = { auto: '#DC2626', approve: '#059669', none: '#94A3B8' }
-const MODE_TEXT = { auto: '✉️ Sent automatically', approve: '🧑‍💼 Caseworker approves each one', none: '✋ Not used' }
+const MODE_TEXT: Record<'auto' | 'approve' | 'none', { icon: LucideIcon; text: string }> = {
+  auto: { icon: Mail, text: 'Sent automatically' },
+  approve: { icon: UserCheck, text: 'Caseworker approves each one' },
+  none: { icon: Ban, text: 'Not used' },
+}
 const OUTCOME_ANIM: Record<RolloutComputed['outcome'], LaunchAnim> = { cleared: 'lift', blocked: 'blocked', hold: 'hold' }
 
 export function LaunchCard() {
@@ -48,7 +53,7 @@ export function LaunchCard() {
     return (
       <CardShell place="launch" className="card-launch" onClose={close}>
         <StepHeader eyebrow="Launch Pad · Ready to launch?" accent={ROSE} steps={[]} current={0} reachable={0} onClose={close} />
-        <SectionTitle accent={ROSE} title="You skipped this optional step" sub="Your skills report marks deployment judgment as not assessed. To try it, use ↺ Reset this room in the corner." />
+        <SectionTitle accent={ROSE} title="You skipped this optional step" sub="Your skills report marks deployment judgment as not assessed. To try it, use Reset this room in the corner." />
         <NavRow>
           <Btn accent={ROSE} onClick={close}>
             Close
@@ -176,7 +181,10 @@ function AskStep({ s, onNext, onSkip }: { s: SessionView; onNext: () => void; on
           <div className="text-[12px] text-slate-600">made-up applicants tested / vs real applications every week</div>
         </div>
         <div className="seed-tile rounded-2xl border border-emerald-200 bg-emerald-50/60 p-3" style={{ animationDelay: '180ms' }}>
-          <div className="text-[15px] font-extrabold text-emerald-900">🔒 Staff approve outreach</div>
+          <div className="text-[15px] font-extrabold text-emerald-900">
+            <Lock size={14} className="mr-1 inline align-[-0.1em]" />
+            Staff approve outreach
+          </div>
           <div className="text-[12px] text-emerald-800/80">Maya’s own policy, not optional</div>
         </div>
       </div>
@@ -233,7 +241,8 @@ function PremortemStep({ s, onBack, onNext }: { s: SessionView; onBack: () => vo
                             : { borderColor: '#FECDD3', color: '#BE123C' }
                       }
                     >
-                      {k === 'tested' ? '✓ A test covered it' : '? Never tested'}
+                      {k === 'tested' ? <Check size={13} strokeWidth={3} className="mr-1 inline align-[-0.15em]" /> : <CircleHelp size={13} className="mr-1 inline align-[-0.15em]" />}
+                      {k === 'tested' ? 'A test covered it' : 'Never tested'}
                     </button>
                   ))}
                 </div>
@@ -330,7 +339,15 @@ function CallStep({
                   ))}
                 </div>
                 <span className="text-[11.5px] font-semibold" style={{ color: MODE_COLOR[c.mode] }}>
-                  {MODE_TEXT[c.mode]}
+                  {(() => {
+                    const M = MODE_TEXT[c.mode]
+                    return (
+                      <>
+                        <M.icon size={12} className="mr-1 inline align-[-0.15em]" />
+                        {M.text}
+                      </>
+                    )
+                  })()}
                 </span>
               </div>
             </button>
@@ -420,13 +437,13 @@ function PlanStep({
       <div className="mt-2 grid gap-1.5">
         {RULES.map((r) => {
           const on = rules.includes(r.key)
-          const icon = r.kind === 'pause' ? '⏸' : r.kind === 'expand' ? '📈' : '🤷'
+          const Icon = r.kind === 'pause' ? CirclePause : r.kind === 'expand' ? TrendingUp : Meh
           return (
             <button key={r.key} onClick={() => toggleRule(r.key)} className="flex items-center gap-2.5 rounded-xl border bg-white px-3 py-2 text-left transition" style={{ borderColor: on ? ROSE : '#E2E8F0', background: on ? `${ROSE}0D` : '#fff' }}>
-              <span className="text-[16px]">{icon}</span>
+              <Icon size={17} className="shrink-0" style={{ color: on ? ROSE : '#64748B' }} />
               <span className="flex-1 text-[12.5px] text-slate-700">{r.text}</span>
               <span className="grid h-4 w-4 place-items-center rounded border text-[10px] text-white" style={{ borderColor: on ? ROSE : '#CBD5E1', background: on ? ROSE : '#fff' }}>
-                {on ? '✓' : ''}
+                {on && <Check size={11} strokeWidth={3} />}
               </span>
             </button>
           )
@@ -434,7 +451,7 @@ function PlanStep({
       </div>
       <NavRow onBack={onBack}>
         <Btn accent={ROSE} onClick={onLaunch}>
-          🚀 Start the launch sequence
+          <Rocket size={15} /> Start the launch sequence
         </Btn>
       </NavRow>
     </div>
@@ -477,7 +494,8 @@ function LaunchStep({ s, seq, finished, onBack, onDone }: { s: SessionView; seq:
   const rows = d && seq === 'done' ? checklist(d.computed, s) : null
   const LABELS = ['Tests run', 'Untested situations named', 'Caseworker approval', 'Measures usefulness', 'Measures reliability', 'Pause and expand rules']
   const outcome = d?.computed.outcome
-  const outcomeText = outcome === 'cleared' ? '🚀 Cleared for a reviewed pilot' : outcome === 'blocked' ? '⛔ Hold: the policy check failed' : '⏸ Staying on the pad'
+  const outcomeText = outcome === 'cleared' ? 'Cleared for a reviewed pilot' : outcome === 'blocked' ? 'Hold: the policy check failed' : 'Staying on the pad'
+  const OutcomeIcon = outcome === 'cleared' ? Rocket : outcome === 'blocked' ? OctagonX : CirclePause
   const outcomeColor = outcome === 'cleared' ? '#86EFAC' : outcome === 'blocked' ? '#F87171' : '#CBD5E1'
   const statusDot = seq === 'count' ? '#FBBF24' : outcomeColor
 
@@ -486,7 +504,7 @@ function LaunchStep({ s, seq, finished, onBack, onDone }: { s: SessionView; seq:
       <div className="launch-panel overflow-hidden rounded-2xl p-4 text-white">
         <div className="flex items-center gap-2 font-mono text-[10.5px] font-bold tracking-[.14em] text-rose-100/80">
           <span className="h-2 w-2 rounded-full" style={{ background: statusDot, boxShadow: `0 0 8px ${statusDot}` }} />
-          LAUNCH SEQUENCE · PATHWAYS FORWARD MATCH ASSISTANT
+          LAUNCH SEQUENCE · NEXT CHAPTER JOB MATCH ASSISTANT
         </div>
         <div className="mt-3 flex flex-col gap-4 sm:flex-row">
           <div className="flex shrink-0 flex-col items-center justify-end sm:w-[140px]">
@@ -527,6 +545,7 @@ function LaunchStep({ s, seq, finished, onBack, onDone }: { s: SessionView; seq:
         </div>
         {seq === 'done' && d && (
           <div className="seed-step mt-3 text-center text-[17px] font-extrabold" style={{ color: outcomeColor, animationDelay: '700ms' }}>
+            <OutcomeIcon size={18} className="mr-1.5 inline align-[-0.15em]" />
             {outcomeText}
           </div>
         )}
@@ -559,10 +578,14 @@ function LaunchStep({ s, seq, finished, onBack, onDone }: { s: SessionView; seq:
               { on: d.computed.hasExpandRule, t: 'expand rule' },
             ].map((p) => (
               <span key={p.t} className="rounded-full px-2.5 py-1 text-[11.5px] font-semibold" style={p.on ? { background: '#DCFCE7', color: '#166534' } : { background: '#F1F5F9', color: '#64748B' }}>
-                {p.on ? '✓' : '○'} {p.t}
+                {p.on ? <Check size={11} strokeWidth={3} className="mr-1 inline align-[-0.1em]" /> : <Circle size={10} className="mr-1 inline align-[-0.05em]" />}
+                {p.t}
               </span>
             ))}
-            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11.5px] font-semibold text-emerald-800">🔒 Staff approval stays required</span>
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11.5px] font-semibold text-emerald-800">
+              <Lock size={11} className="mr-1 inline align-[-0.1em]" />
+              Staff approval stays required
+            </span>
           </div>
           {!finished && <p className="mt-2 text-[12px] text-slate-500">Change your plan as often as you like.</p>}
         </div>

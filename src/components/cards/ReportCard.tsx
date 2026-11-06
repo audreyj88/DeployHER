@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { CAREERS, CAVEAT, STATUS_META } from '@/lib/report'
+import { Check, ClipboardCopy, Sparkle, Sprout, Trash2, X } from 'lucide-react'
+import { CAREERS, CAREERS_INTRO, CAREERS_TECHNICAL, CAVEAT, STATUS_META } from '@/lib/report'
 import type { SessionView, SkillResult, SkillStatus } from '@/lib/types'
 import { useGame } from '@/store/game'
 import { buildMarkdown, facts, plainSummary, ROOM_STAMPS } from './report/markdown'
@@ -12,8 +13,8 @@ const STEPS = [
   { key: 'brought', label: 'What you brought', next: 'What you showed →' },
   { key: 'showed', label: 'What you showed', next: 'By the numbers →' },
   { key: 'numbers', label: 'By the numbers', next: 'Reading list →' },
-  { key: 'reading', label: 'Reading list', next: 'Keep it →' },
-  { key: 'keep', label: 'Keep it', next: '' },
+  { key: 'reading', label: 'Reading list', next: 'Save your report →' },
+  { key: 'keep', label: 'Save your report', next: '' },
 ]
 
 function Heading({ eyebrow, title, sub }: { eyebrow?: string; title: string; sub?: string }) {
@@ -61,7 +62,7 @@ export function ReportCard() {
   return (
     <CardShell place="report" className="card-report" onClose={busy ? undefined : close}>
       <StepHeader
-        eyebrow="Skills Report · Pathways Forward"
+        eyebrow="Skills Report · Next Chapter"
         accent={GOLD}
         steps={report ? STEPS : []}
         current={step}
@@ -117,7 +118,7 @@ function Composing({ busy, err, onRetry }: { busy: boolean; err: string | null; 
           <ul className="mt-3 space-y-1.5 text-[13px] text-stone-600">
             {['Your Greenhouse answers', 'Your interview transcript and score', 'Every lab test run', 'Your Launch Pad decision'].map((t, i) => (
               <li key={t} className="seed-tile flex items-center gap-2" style={{ animationDelay: `${i * 110}ms` }}>
-                <span style={{ color: GOLD }}>✦</span> {t}
+                <Sparkle size={13} fill="currentColor" className="shrink-0" style={{ color: GOLD }} /> {t}
               </li>
             ))}
           </ul>
@@ -157,8 +158,8 @@ function Mission({ s }: { s: SessionView }) {
               className="report-stamp flex flex-col items-center rounded-2xl border-2 border-dashed px-2 py-3 text-center"
               style={{ borderColor: fact ? st.color : '#CBD5E1', ['--tilt' as string]: `${st.tilt}deg`, ['--stamp-op' as string]: fact ? 1 : 0.55, animationDelay: `${i * 160}ms` } as CSSProperties}
             >
-              <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-dashed text-[24px]" style={{ borderColor: fact ? st.color : '#CBD5E1', filter: fact ? undefined : 'grayscale(1)' }}>
-                {st.icon}
+              <span className="grid h-14 w-14 place-items-center rounded-full border-2 border-dashed" style={{ borderColor: fact ? st.color : '#CBD5E1', color: fact ? st.color : '#94A3B8' }}>
+                <st.icon size={24} />
               </span>
               <span className="mt-1.5 text-[9.5px] font-extrabold uppercase tracking-[.1em]" style={{ color: fact ? st.color : '#94A3B8' }}>
                 {st.title}
@@ -181,7 +182,10 @@ function Brought({ s }: { s: SessionView }) {
         <div className="space-y-2.5">
           {confirmed.strengths.map((k, i) => (
             <div key={k.id} className="seed-tile rounded-2xl border border-amber-200/70 bg-white/80 p-3.5" style={{ animationDelay: `${i * 90}ms` }}>
-              <div className="text-[14px] font-bold text-stone-900">🌱 {k.label}</div>
+              <div className="text-[14px] font-bold text-stone-900">
+                <Sprout size={15} className="mr-1 inline align-[-0.15em] text-emerald-700" />
+                {k.label}
+              </div>
               <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[13px]">
                 <span className="italic text-stone-600">You said: “{k.from}”</span>
                 <span style={{ color: '#D9A23B' }}>→</span>
@@ -263,7 +267,7 @@ function Squares({ results }: { results: { applicantId: string; pass: boolean; n
     <span className="flex gap-1">
       {results.map((r) => (
         <span key={r.applicantId} title={r.name} className="grid h-5 w-5 place-items-center rounded text-[11px] font-bold text-white" style={{ background: r.pass ? '#22C55E' : '#EF4444' }}>
-          {r.pass ? '✓' : '✕'}
+          {r.pass ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
         </span>
       ))}
     </span>
@@ -374,14 +378,16 @@ function Reading({ s }: { s: SessionView }) {
         <div className="text-[11px] font-bold uppercase tracking-[.14em]" style={{ color: '#E0905F' }}>
           Roles to explore
         </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <p className="mt-1.5 text-[13px] leading-relaxed text-white/90">{CAREERS_INTRO}</p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
           {CAREERS.map((c) => (
             <span key={c} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[12.5px] font-semibold backdrop-blur">
               {c}
             </span>
           ))}
         </div>
-        <p className="mt-3 text-[12px] text-white/75">Worth exploring as you keep building skills. One simulation doesn’t qualify anyone for these roles, and this isn’t a certificate.</p>
+        <p className="mt-3 text-[12.5px] text-white/80">{CAREERS_TECHNICAL}</p>
+        <p className="mt-1 text-[12.5px] font-semibold text-white">Today was a real first step. Keep practicing and keep exploring. These roles are within reach.</p>
       </div>
     </div>
   )
@@ -410,10 +416,18 @@ function Keep({ s }: { s: SessionView }) {
   }
   return (
     <div>
-      <Heading eyebrow="Keep it" title="Take your report with you" />
+      <Heading eyebrow="Save your report" title="Take your report with you" />
       <div className="flex flex-wrap gap-2">
         <Btn accent={GOLD} onClick={copy}>
-          {copied ? 'Copied ✓' : '📋 Copy summary'}
+          {copied ? (
+            <>
+              <Check size={15} /> Copied
+            </>
+          ) : (
+            <>
+              <ClipboardCopy size={15} /> Copy summary
+            </>
+          )}
         </Btn>
         <Btn variant="soft" accent={GOLD} onClick={download}>
           ⬇ Download .md
@@ -425,7 +439,8 @@ function Keep({ s }: { s: SessionView }) {
         <div className="mt-2.5">
           {!confirm ? (
             <button className="text-[12.5px] font-semibold text-red-700 hover:underline" onClick={() => setConfirm(true)}>
-              🗑 Delete my session
+              <Trash2 size={13} className="mr-1 inline align-[-0.15em]" />
+              Delete my session
             </button>
           ) : (
             <div className="flex flex-wrap items-center gap-2">

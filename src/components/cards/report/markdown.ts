@@ -1,13 +1,14 @@
 import { CHOICES } from '@/lib/rollout'
-import { CAREERS, CAVEAT, STATUS_META, stampFacts } from '@/lib/report'
+import { Coffee, MessagesSquare, Rocket, Sprout, Wrench } from 'lucide-react'
+import { CAREERS, CAREERS_INTRO, CAREERS_TECHNICAL, CAVEAT, STATUS_META, stampFacts } from '@/lib/report'
 import type { Session, SessionView } from '@/lib/types'
 
 export const ROOM_STAMPS = [
-  { key: 'setup', icon: '🌱', title: 'The Greenhouse', color: '#2F7D4F', tilt: -6 },
-  { key: 'interview', icon: '🤝', title: 'Pathways Forward', color: '#2A9D8F', tilt: 4 },
-  { key: 'debrief', icon: '☕', title: 'The Coffee Break', color: '#9A5B3A', tilt: -3 },
-  { key: 'lab', icon: '🛠️', title: 'Make It Work Lab', color: '#D9734A', tilt: 5 },
-  { key: 'launch', icon: '🚀', title: 'Launch Pad', color: '#C8475D', tilt: -4 },
+  { key: 'setup', icon: Sprout, title: 'The Greenhouse', color: '#2F7D4F', tilt: -6 },
+  { key: 'interview', icon: MessagesSquare, title: 'Next Chapter · Client Interview', color: '#2A9D8F', tilt: 4 },
+  { key: 'debrief', icon: Coffee, title: 'The Coffee Break', color: '#9A5B3A', tilt: -3 },
+  { key: 'lab', icon: Wrench, title: 'Make It Work Lab', color: '#D9734A', tilt: 5 },
+  { key: 'launch', icon: Rocket, title: 'Launch Pad', color: '#C8475D', tilt: -4 },
 ] as const
 
 export const facts = (s: SessionView) => stampFacts(s as unknown as Session)
@@ -17,7 +18,7 @@ export function buildMarkdown(s: SessionView): string {
   const f = facts(s)
   const out: string[] = []
   out.push(`# ${r.headline}`, '', r.summary, '')
-  out.push('## Mission', '', 'Pathways Forward (fictional): discover the client’s real problem and improve a prebuilt recommendation assistant.', '')
+  out.push('## Mission', '', 'Next Chapter (fictional), helping women return to work after caregiving: discover the client’s real problem (manual job matching, not a website chatbot) and improve a prebuilt job-matching assistant.', '')
   for (const st of ROOM_STAMPS) out.push(`- **${st.title}:** ${f[st.key] ?? 'Skipped · not assessed'}`)
   out.push('', '## What I brought', '')
   if (s.setup?.confirmed && s.setup.strengths.length) {
@@ -37,8 +38,9 @@ export function buildMarkdown(s: SessionView): string {
   out.push(`- Rollout choice: ${d ? `${CHOICES.find((c) => c.key === d.choice)!.short} (practice only; not evidence of production safety)` : 'not assessed'}`)
   out.push('', '## Next steps', '')
   r.nextSteps.forEach((n, i) => out.push(`${i + 1}. ${n}`))
-  out.push('', '## Roles to explore', '')
+  out.push('', '## Roles to explore', '', CAREERS_INTRO, '')
   for (const c of CAREERS) out.push(`- ${c}`)
+  out.push('', CAREERS_TECHNICAL)
   out.push('', `*${CAVEAT} All people, organisations and applicants are fictional. ${new Date(r.generatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}*`, '')
   return out.join('\n')
 }

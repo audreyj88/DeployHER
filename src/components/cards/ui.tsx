@@ -1,6 +1,7 @@
 'use client'
 // Shared card UI: shell, step header, buttons, titles, errors, thinking dots.
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { ArrowLeft, X, type LucideIcon } from 'lucide-react'
 import { placeById, type PlaceId } from '@/lib/places'
 import { useGame } from '@/store/game'
 
@@ -47,7 +48,7 @@ export interface StepDef {
 }
 
 /**
- * Eyebrow + progress segments + ✕. Segments up to `current` are filled; `reachable` ones are pale and clickable; the rest are faint.
+ * Eyebrow + progress segments + close button. Segments up to `current` are filled; `reachable` ones are pale and clickable; the rest are faint.
  */
 export function StepHeader({
   eyebrow,
@@ -80,7 +81,7 @@ export function StepHeader({
           {right}
           {onClose && !hideClose && (
             <button onClick={onClose} aria-label="Close" className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-black/5 hover:text-slate-800">
-              ✕
+              <X size={17} />
             </button>
           )}
         </div>
@@ -112,6 +113,11 @@ export function StepHeader({
       )}
     </div>
   )
+}
+
+/** A Lucide icon sized and aligned to sit inline with text. */
+export function Ico({ icon: Icon, size = 15, className = '', style }: { icon: LucideIcon; size?: number; className?: string; style?: CSSProperties }) {
+  return <Icon size={size} strokeWidth={2.2} aria-hidden className={`inline-block shrink-0 align-[-0.17em] ${className}`} style={style} />
 }
 
 export function Spinner({ className = '' }: { className?: string }) {
@@ -156,7 +162,15 @@ export function Btn({
   )
 }
 
-export function NavRow({ onBack, children, backLabel = '← Back' }: { onBack?: () => void; children?: ReactNode; backLabel?: string }) {
+export function NavRow({
+  onBack,
+  children,
+  backLabel = (
+    <>
+      <ArrowLeft size={15} /> Back
+    </>
+  ),
+}: { onBack?: () => void; children?: ReactNode; backLabel?: ReactNode }) {
   return (
     <div className="mt-5 flex items-center justify-between gap-3">
       <div>{onBack && <Btn variant="ghost" onClick={onBack}>{backLabel}</Btn>}</div>
@@ -199,7 +213,7 @@ export function ErrorStrip({ message, onDismiss }: { message?: string | null; on
     <div className="mb-3 flex items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-800">
       <span>{m}</span>
       <button className="shrink-0 text-red-500 hover:text-red-800" onClick={() => (onDismiss ? onDismiss() : set({ error: null }))} aria-label="Dismiss">
-        ✕
+        <X size={15} />
       </button>
     </div>
   )

@@ -90,7 +90,7 @@ export async function gradeTranscript(turns: Turn[], typedRevealed: Record<strin
     schema: GradeSchema,
     temperature: 0,
     maxOutputTokens: 2500,
-    instructions: `You grade a practice client-discovery interview for DeployHER, a learning simulation. The consultant interviewed Maya Chen (a fictional nonprofit director) who asked for "a chatbot".
+    instructions: `You grade a practice client-discovery interview for DeployHER, a learning simulation. The consultant interviewed Maya Chen, Executive Director of Next Chapter (a fictional nonprofit that helps women return to paid work after caregiving breaks), who asked for "an AI chatbot for our website". Her real bottleneck is caseworkers manually matching applicants to suitable job opportunities; a strong consultant uncovers that and what a good job match requires.
 
 Rubric (score each dimension within its range):
 ${rubricText}

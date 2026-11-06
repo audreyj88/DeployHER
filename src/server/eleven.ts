@@ -19,7 +19,7 @@ function eleven() {
 
 function agentConfig() {
   return {
-    name: 'DeployHER · Maya Chen (Pathways Forward)',
+    name: 'DeployHER · Maya Chen (Next Chapter)',
     tags: ['deployher'],
     conversationConfig: {
       agent: {

@@ -4,15 +4,17 @@ import { RoundedBox } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { BriefcaseBusiness, Check, Clock, FileText, Scale, Search, Sparkles, X } from 'lucide'
 import { CORE_TESTS } from '@/lib/catalog'
 import { useGame } from '@/store/game'
 import { talkingFromBusy } from '../state'
-import { KAI, Person, lookFromSeed } from '../people'
+import { KAI, Person, SeatedPerson, lookFromSeed } from '../people'
 import { Tag } from '../Tag'
 import { AITerminal } from './AITerminal'
-import { Mat } from './props'
+import { Desk, Mat, Mug, OfficeChair } from './props'
 import { floorTexture, RoomShell, type BoardData } from './RoomShell'
 import { canvasTex, reducedMotion, roundRect, useColliders } from './util'
+import { strokeIcon, type IconNode } from '../lucide'
 
 const ID = 'lab' as const
 const ACCENT = '#D9734A'
@@ -23,12 +25,12 @@ const KIND = {
   output: { color: '#94A3B8', bg: '#F1F5F9', ink: '#334155', tag: 'OUTPUT' },
 } as const
 type Kind = keyof typeof KIND
-const STATIONS: { x: number; icon: string; label: string; kind: Kind; key: string }[] = [
-  { x: -4.6, icon: '🔎', label: 'Find programs', kind: 'tool', key: 'search' },
-  { x: -2.6, icon: '🎓', label: 'Prerequisites', kind: 'tool', key: 'prereq' },
-  { x: -0.6, icon: '🕒', label: 'Schedule', kind: 'tool', key: 'schedule' },
-  { x: 1.6, icon: '✨', label: 'AI model', kind: 'ai', key: 'ai' },
-  { x: 3.6, icon: '📝', label: 'Recommendation', kind: 'output', key: 'output' },
+const STATIONS: { x: number; icon: IconNode; label: string; kind: Kind; key: string }[] = [
+  { x: -4.6, icon: Search, label: 'Find jobs', kind: 'tool', key: 'search' },
+  { x: -2.6, icon: BriefcaseBusiness, label: 'Requirements', kind: 'tool', key: 'prereq' },
+  { x: -0.6, icon: Clock, label: 'Hours & place', kind: 'tool', key: 'schedule' },
+  { x: 1.6, icon: Sparkles, label: 'Picks a job', kind: 'ai', key: 'ai' },
+  { x: 3.6, icon: FileText, label: 'Draft', kind: 'output', key: 'output' },
 ]
 const FILE_COLS = ['#F59E0B', '#EC4899', '#10B981', '#6366F1', '#F97316']
 const APPLICANT_X = [-6.6, -5.65, -4.7, -3.75, -2.8]
@@ -50,10 +52,9 @@ function signTex(s: (typeof STATIONS)[number], ghost: boolean) {
     if (ghost) g.setLineDash([14, 10])
     g.stroke()
     g.setLineDash([])
-    g.font = '48px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif'
     g.textBaseline = 'middle'
     g.globalAlpha = ghost ? 0.45 : 1
-    g.fillText(s.icon, 22, 60)
+    strokeIcon(g, s.icon, 24, 38, 44, ghost ? '#64748B' : k.color, 2.2)
     g.fillStyle = ghost ? '#64748B' : k.ink
     g.font = '800 34px system-ui, sans-serif'
     g.fillText(s.label, 86, 60, w - 100)
@@ -200,63 +201,165 @@ function Belt({ running }: { running: boolean }) {
   )
 }
 
+const GRADER = { x: 6.35, z: -3.5 }
+
+/** The grader's screen: one row per test applicant with a pass / fail / waiting pill. */
+function graderScreenTex(verdicts: (boolean | null)[]) {
+  const key = verdicts.map((v) => (v === null ? '-' : v ? 'y' : 'n')).join('')
+  return canvasTex(`lab:grader:${key}`, 512, 360, (g, w, h) => {
+    g.fillStyle = '#0F172A'
+    g.fillRect(0, 0, w, h)
+    g.fillStyle = '#E2E8F0'
+    g.font = '800 38px system-ui, sans-serif'
+    g.textBaseline = 'middle'
+    strokeIcon(g, Scale, 24, 24, 36, '#E2E8F0', 2.4)
+    g.fillText('Grader', 70, 42)
+    CORE_TESTS.forEach((t, i) => {
+      const y = 82 + i * 55
+      const v = verdicts[i]
+      roundRect(g, 20, y, w - 40, 47, 12)
+      g.fillStyle = '#1E293B'
+      g.fill()
+      g.fillStyle = '#F1F5F9'
+      g.font = '700 28px system-ui, sans-serif'
+      g.fillText(t.name, 40, y + 24)
+      const label = v === null ? '…' : v ? 'pass' : 'fail'
+      const bg = v === null ? '#334155' : v ? '#16A34A' : '#DC2626'
+      roundRect(g, w - 176, y + 6, 140, 35, 17)
+      g.fillStyle = bg
+      g.fill()
+      g.fillStyle = '#FFFFFF'
+      g.font = '800 23px system-ui, sans-serif'
+      if (v === null) {
+        g.textAlign = 'center'
+        g.fillText(label, w - 106, y + 24)
+        g.textAlign = 'left'
+      } else {
+        strokeIcon(g, v ? Check : X, w - 150, y + 12, 23, '#FFFFFF', 3.2)
+        g.fillText(label, w - 118, y + 24)
+      }
+    })
+  })
+}
+
 function Grader({ verdicts }: { verdicts: (boolean | null)[] }) {
+  const tex = graderScreenTex(verdicts)
+  const H = 0.9
   return (
-    <group position={[6.25, 0, -3.5]}>
-      <RoundedBox args={[1.9, 1.0, 1.3]} radius={0.08} smoothness={2} position-y={0.5} castShadow receiveShadow>
-        <Mat color="#F1F5F9" rough={0.5} />
+    <group position={[GRADER.x, 0, GRADER.z]}>
+      {/* cabinet */}
+      <RoundedBox args={[1.5, H, 1.1]} radius={0.08} smoothness={2} position-y={H / 2} castShadow receiveShadow>
+        <Mat color="#F8FAFC" rough={0.45} />
       </RoundedBox>
-      <RoundedBox args={[1.96, 0.08, 1.36]} radius={0.03} smoothness={2} position-y={1.02}>
-        <Mat color="#475569" rough={0.5} />
-      </RoundedBox>
-      {/* balance scale */}
-      <group position={[0, 1.06, -0.15]}>
-        <mesh position-y={0.35}>
-          <cylinderGeometry args={[0.03, 0.04, 0.7, 8]} />
-          <Mat color="#C9A34E" metal={0.7} rough={0.3} />
-        </mesh>
-        <mesh position-y={0.7} rotation-z={Math.PI / 2}>
-          <cylinderGeometry args={[0.02, 0.02, 0.9, 6]} />
-          <Mat color="#C9A34E" metal={0.7} rough={0.3} />
-        </mesh>
-        {[-0.42, 0.42].map((x) => (
-          <group key={x} position={[x, 0.5, 0]}>
-            <mesh position-y={0.1}>
-              <cylinderGeometry args={[0.006, 0.006, 0.2, 4]} />
-              <Mat color="#C9A34E" metal={0.7} />
-            </mesh>
-            <mesh>
-              <cylinderGeometry args={[0.14, 0.1, 0.03, 16]} />
-              <Mat color="#C9A34E" metal={0.7} rough={0.3} />
-            </mesh>
-          </group>
-        ))}
-      </group>
-      {/* verdict lamps on the front face */}
+      <mesh position={[0, H - 0.08, 0.556]}>
+        <boxGeometry args={[1.36, 0.05, 0.01]} />
+        <meshStandardMaterial color="#475569" roughness={0.5} />
+      </mesh>
+      {/* inlet slot where answers arrive from the belt */}
+      <mesh position={[-0.751, BELT.h + 0.02, 0]}>
+        <boxGeometry args={[0.01, 0.14, 0.62]} />
+        <meshStandardMaterial color="#1E293B" />
+      </mesh>
+      {/* verdict lamps along the front */}
       {verdicts.map((v, i) => {
         const c = v === null ? '#CBD5E1' : v ? '#22C55E' : '#EF4444'
         return (
-          <mesh key={i} position={[-0.6 + i * 0.3, 0.62, 0.66]}>
-            <sphereGeometry args={[0.085, 14, 10]} />
-            <meshStandardMaterial color={c} emissive={c} emissiveIntensity={v === null ? 0.05 : 1.6} toneMapped={false} />
+          <mesh key={i} position={[-0.5 + i * 0.25, 0.42, 0.556]} rotation-x={Math.PI / 2}>
+            <cylinderGeometry args={[0.07, 0.07, 0.03, 18]} />
+            <meshStandardMaterial color={c} emissive={c} emissiveIntensity={v === null ? 0.05 : 1.4} toneMapped={false} />
           </mesh>
         )
       })}
-      <Tag kind="lab" text="⚖️ Grader · CODE · NOT THE AGENT" accent="#475569" position={[0, 2.2, 0]} />
+      {/* angled screen facing the room */}
+      <group position={[0, H + 0.42, -0.12]} rotation-x={-0.28}>
+        <RoundedBox args={[1.34, 0.96, 0.06]} radius={0.03} smoothness={2} castShadow>
+          <Mat color="#334155" rough={0.5} />
+        </RoundedBox>
+        <mesh position-z={0.032}>
+          <planeGeometry args={[1.24, 0.86]} />
+          <meshBasicMaterial map={tex} toneMapped={false} />
+        </mesh>
+      </group>
+      <mesh position={[0, H + 0.05, -0.2]}>
+        <boxGeometry args={[0.14, 0.12, 0.08]} />
+        <Mat color="#475569" />
+      </mesh>
+      <Tag kind="lab" icon={Scale} text="Grader · plain code" accent="#64748B" position={[0, 2.1, 0]} />
     </group>
   )
 }
 
-function DashedPath() {
-  const dashes = useMemo(() => Array.from({ length: 6 }, (_, i) => 4.75 + i * 0.16), [])
+/** Short sloped tray carrying answers off the end of the belt into the grader. */
+function Chute() {
+  const x0 = BELT.x + BELT.len / 2
+  const x1 = GRADER.x - 0.75
+  const len = x1 - x0 + 0.1
   return (
-    <group>
-      {dashes.map((x) => (
-        <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.016, BELT.z]}>
-          <planeGeometry args={[0.09, 0.12]} />
-          <meshBasicMaterial color="#475569" />
+    <group position={[(x0 + x1) / 2, BELT.h - 0.02, BELT.z]} rotation-z={-0.08}>
+      <mesh receiveShadow>
+        <boxGeometry args={[len, 0.03, 0.62]} />
+        <Mat color="#CBD5E1" metal={0.4} rough={0.35} />
+      </mesh>
+      {[-1, 1].map((sd) => (
+        <mesh key={sd} position={[0, 0.06, sd * 0.31]}>
+          <boxGeometry args={[len, 0.12, 0.025]} />
+          <Mat color="#94A3B8" metal={0.4} rough={0.35} />
         </mesh>
       ))}
+    </group>
+  )
+}
+
+/** Faint arrows painted along the lane in front of the belt: applicants flow left to right. */
+function FlowArrows() {
+  const xs = useMemo(() => [-3.6, -1.6, 0.5, 2.6, 4.7], [])
+  return (
+    <group>
+      {xs.map((x) => (
+        <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.018, BELT.z + 1.02]}>
+          <circleGeometry args={[0.16, 3]} />
+          <meshBasicMaterial color="#FFFFFF" transparent opacity={0.7} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/** Laptop with the screen facing its user (local -z). */
+function Laptop({ position, running }: { position: [number, number, number]; running: boolean }) {
+  const screen = useRef<THREE.MeshBasicMaterial>(null)
+  useFrame(({ clock }) => {
+    if (screen.current) screen.current.color.set(running && Math.sin(clock.elapsedTime * 5) > 0 ? '#C4B5FD' : '#A78BFA')
+  })
+  return (
+    <group position={position}>
+      <RoundedBox args={[0.42, 0.02, 0.3]} radius={0.008} smoothness={2} position-y={0.01}>
+        <Mat color="#CBD5E1" metal={0.5} rough={0.35} />
+      </RoundedBox>
+      <group position={[0, 0.02, 0.14]} rotation-x={-0.25}>
+        <RoundedBox args={[0.42, 0.28, 0.015]} radius={0.008} smoothness={2} position-y={0.14}>
+          <Mat color="#CBD5E1" metal={0.5} rough={0.35} />
+        </RoundedBox>
+        <mesh position={[0, 0.14, -0.009]} rotation-y={Math.PI}>
+          <planeGeometry args={[0.38, 0.24]} />
+          <meshBasicMaterial ref={screen} color="#A78BFA" toneMapped={false} />
+        </mesh>
+      </group>
+    </group>
+  )
+}
+
+const KAI_DESK = { x: 4.3, z: -0.55 }
+
+/** Kai at her desk, facing into the room, watching the test runs. */
+function KaiDesk({ running, talking }: { running: boolean; talking: boolean }) {
+  return (
+    <group position={[KAI_DESK.x, 0, KAI_DESK.z]}>
+      <Desk position={[0, 0, 0]} width={1.3} depth={0.66} />
+      <Laptop position={[0.05, 0.765, -0.06]} running={running} />
+      <Mug position={[0.45, 0.765, 0.05]} color={ACCENT} />
+      <OfficeChair position={[0, 0, -0.75]} color="#475569" />
+      <SeatedPerson position={[0, 0, -0.72]} look={KAI} pose={talking ? 'talking' : 'typing'} talking={talking} name="Kai · built the agent" />
     </group>
   )
 }
@@ -301,8 +404,8 @@ export function LabRoom() {
   useColliders(ID, [
     { id: 'belt', x: BELT.x, z: BELT.z, w: BELT.len + 0.2, d: 1.5 },
     { id: 'plinth', x: 1.6, z: -4.5, w: 1.2, d: 0.7 },
-    { id: 'grader', x: 6.25, z: -3.5, w: 2.0, d: 1.4 },
-    { id: 'kai', x: 4.7, z: -1.5, r: 0.35 },
+    { id: 'grader', x: GRADER.x, z: GRADER.z, w: 1.6, d: 1.2 },
+    { id: 'kai-desk', x: KAI_DESK.x, z: KAI_DESK.z - 0.3, w: 1.4, d: 1.4 },
     ...APPLICANT_X.map((x, i) => ({ id: `app-${i}`, x, z: -1.6, r: 0.3 })),
   ])
   return (
@@ -313,8 +416,10 @@ export function LabRoom() {
       ))}
       <RidingFiles running={running} />
       <Plinth running={running} version={built ? 'v2' : 'v1'} />
-      <DashedPath />
+      <Chute />
+      <FlowArrows />
       <Grader verdicts={verdicts} />
+      <KaiDesk running={running} talking={talk.kai} />
       {CORE_TESTS.map((t, i) => {
         const v = verdicts[i]
         const x = APPLICANT_X[i]
@@ -327,11 +432,10 @@ export function LabRoom() {
             look={looks[i]}
             name={t.name}
             tagExtra={v === null ? '' : v ? 'pass' : 'fail'}
-            tagIcon={v === null ? undefined : <span>{v ? '✓' : '✕'}</span>}
+            tagIcon={v === null ? undefined : v ? Check : X}
           />
         )
       })}
-      <Person position={[4.7, 0, -1.5]} rotationY={Math.atan2(2.6 - 4.7, -3.5 - -1.5)} look={KAI} name="Kai · built it" talking={talk.kai} />
     </RoomShell>
   )
 }

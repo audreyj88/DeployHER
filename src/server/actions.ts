@@ -1,8 +1,8 @@
 import 'server-only'
 import { z } from 'zod'
-import { CORE_TESTS, CUSTOM_TOPICS } from '@/lib/catalog'
+import { CORE_TESTS, CUSTOM_TOPICS, PAY_OPTIONS } from '@/lib/catalog'
 import { canEnter, nextStage, SKIPPABLE } from '@/lib/mission'
-import { placeById, PLACE_IDS, stageIndex, type PlaceId } from '@/lib/places'
+import { placeById, placeForStage, PLACE_IDS, stageIndex, type PlaceId } from '@/lib/places'
 import { computeRollout } from '@/lib/rollout'
 import { computeSkills } from '@/lib/report'
 import { draftStrengths, PRACTICE_TODAY } from '@/lib/skills-map'
@@ -36,6 +36,7 @@ export const ActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('voice_start'), reconnect: z.boolean() }),
   z.object({ type: z.literal('voice_register'), conversationId: z.string().regex(/^[A-Za-z0-9_-]{4,80}$/) }),
   z.object({ type: z.literal('interview_end'), captions: z.array(z.object({ role: z.enum(['learner', 'client']), text: str(2000) })).max(200).optional() }),
+  z.object({ type: z.literal('interview_grade') }),
   z.object({ type: z.literal('grade_retry') }),
   z.object({ type: z.literal('debrief_done') }),
   z.object({ type: z.literal('lab_run') }),
@@ -47,9 +48,10 @@ export const ActionSchema = z.discriminatedUnion('type', [
     spec: z.object({
       name: z.string().regex(/^[A-Za-z]{1,20}$/, 'Letters only, please.'),
       interests: z.array(z.enum(CUSTOM_TOPICS as [string, ...string[]])).min(1).max(3),
-      availability: z.enum(['weekdays_day', 'weekday_evenings', 'saturdays', 'weekdays_and_saturdays']),
-      programming: z.enum(['yes', 'no', 'unknown']),
-      remoteOnly: z.boolean(),
+      availability: z.enum(['weekdays_day', 'school_hours', 'mornings', 'three_days']),
+      supervised: z.enum(['yes', 'no', 'unknown']),
+      workplace: z.enum(['any', 'remote_or_hybrid', 'remote']),
+      minPay: z.number().refine((n) => (PAY_OPTIONS as readonly number[]).includes(n), 'Pick a listed pay level.'),
       asksForAction: z.boolean(),
     }),
   }),
@@ -66,6 +68,7 @@ export const ActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('launch_done') }),
   z.object({ type: z.literal('report_generate') }),
   z.object({ type: z.literal('skip'), place }),
+  z.object({ type: z.literal('unlock'), place }),
   z.object({ type: z.literal('reset'), place }),
 ])
 
@@ -202,6 +205,11 @@ export async function runAction(s: Session, a: Action): Promise<Record<string, u
         s.interview.transcriptId = transcriptHash(s.interview.turns)
         completeRoom(s, 'interview')
       }
+      // Grading runs separately (interview_grade) so the learner can head to the Coffee Break straight away.
+      return {}
+    }
+    case 'interview_grade': {
+      if (s.interview.status !== 'ended') throw new ActionError('Finish the interview first.', 409)
       await grade(s)
       return {}
     }
@@ -306,6 +314,23 @@ export async function runAction(s: Session, a: Action): Promise<Record<string, u
       if (a.place === 'interview' && s.interview.status === 'live') s.interview.status = 'idle'
       if (!s.skipped.includes(a.place)) s.skipped.push(a.place)
       completeRoom(s, a.place)
+      s.report = null
+      return {}
+    }
+    case 'unlock': {
+      // Demo shortcut: open any room by skipping every unfinished room before it.
+      const target = stageIndex(placeById(a.place).stage)
+      while (stageIndex(s.stage) < target) {
+        const cur = placeForStage(s.stage)
+        if (!cur) break
+        if (cur.id === 'setup') {
+          if (!s.setup?.confirmed) s.setupLater = true
+        } else {
+          if (cur.id === 'interview' && s.interview.status === 'live') s.interview.status = 'idle'
+          if (!s.skipped.includes(cur.id)) s.skipped.push(cur.id)
+        }
+        completeRoom(s, cur.id)
+      }
       s.report = null
       return {}
     }

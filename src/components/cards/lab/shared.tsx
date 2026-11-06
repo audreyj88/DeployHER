@@ -1,6 +1,7 @@
 'use client'
 // Lab helpers: applicant lookup, avatars, verdict pills, WeekStrip calendar.
-import { applicantFromSpec, CORE_TESTS, DAYS, fmtTime, programById, type Applicant, type Day, type Program } from '@/lib/catalog'
+import { Check, X } from 'lucide-react'
+import { applicantFromSpec, CORE_TESTS, DAYS, fmtTime, jobById, workplaceShort, type Applicant, type Day, type Job } from '@/lib/catalog'
 import { slotFits } from '@/lib/policy'
 import type { AgentAnswer } from '@/lib/policy'
 import type { SessionView } from '@/lib/types'
@@ -45,7 +46,8 @@ export function VerdictPill({ pass, small }: { pass: boolean; small?: boolean })
       className={`inline-flex items-center gap-1 rounded-full font-bold ${small ? 'px-1.5 py-0.5 text-[10.5px]' : 'px-2.5 py-1 text-[11.5px]'}`}
       style={pass ? { background: '#DCFCE7', color: '#166534' } : { background: '#FEE2E2', color: '#991B1B' }}
     >
-      {pass ? '✓ Right' : '✕ Wrong'}
+      {pass ? <Check size={small ? 11 : 13} strokeWidth={3} /> : <X size={small ? 11 : 13} strokeWidth={3} />}
+      {pass ? 'Right' : 'Wrong'}
     </span>
   )
 }
@@ -53,8 +55,8 @@ export function VerdictPill({ pass, small }: { pass: boolean; small?: boolean })
 export function describeAnswer(ans: AgentAnswer | null): string {
   if (!ans) return 'gave no usable answer'
   if (ans.decision === 'recommend') {
-    const p = programById(ans.programId)
-    return p ? `recommended ${p.id} ${p.title}` : `recommended “${ans.programId ?? '?'}” (not in the catalog)`
+    const p = jobById(ans.jobId)
+    return p ? `recommended ${p.id} ${p.title}` : `recommended “${ans.jobId ?? '?'}” (not in the listings)`
   }
   if (ans.decision === 'ask') return `asked: “${ans.question ?? 'a clarifying question'}”`
   return 'said there’s no verified match'
@@ -62,16 +64,15 @@ export function describeAnswer(ans: AgentAnswer | null): string {
 
 export function needsText(a: Applicant | undefined) {
   if (!a) return ''
-  const parts = [a.interests.join(', '), a.availabilityText]
-  if (a.programming === 'yes') parts.push('can code')
-  if (a.programming === 'unknown') parts.push('coding unknown')
-  if (a.remoteOnly) parts.push('remote only')
-  if (a.asksForAction) parts.push('asks to be enrolled')
+  const parts = [a.interests.join(', '), a.availabilityText, workplaceShort(a.workplace), `min $${a.minPay}/hr`]
+  if (a.supervised === 'yes') parts.push('has supervised a team')
+  if (a.supervised === 'unknown') parts.push('supervising unknown')
+  if (a.asksForAction) parts.push('asks to apply right now')
   return parts.join(' · ')
 }
 
-/** Day columns with her free time (green) and the program's class times (outlined green = fits, red = conflict). */
-export function WeekStrip({ applicant, program, compact }: { applicant: Applicant; program?: Program | null; compact?: boolean }) {
+/** Day columns with the hours she can work (green) and the job's required hours (outlined green = fits, red = conflict). */
+export function WeekStrip({ applicant, job, compact }: { applicant: Applicant; job?: Job | null; compact?: boolean }) {
   const days: Day[] = DAYS.filter((d) => d !== 'Sun' || applicant.availability.some((s) => s.day === 'Sun'))
   const lo = 8 * 60
   const hi = 22 * 60
@@ -79,7 +80,7 @@ export function WeekStrip({ applicant, program, compact }: { applicant: Applican
   const y = (m: number) => ((Math.max(lo, Math.min(hi, m)) - lo) / (hi - lo)) * H
   const ticks = [8, 12, 16, 20].map((h) => h * 60)
   let anyConflict = false
-  const classSlots = (program?.sessions ?? []).map((s) => {
+  const classSlots = (job?.sessions ?? []).map((s) => {
     const fits = slotFits(s, applicant.availability)
     if (!fits) anyConflict = true
     return { ...s, fits }
@@ -123,11 +124,11 @@ export function WeekStrip({ applicant, program, compact }: { applicant: Applican
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-3.5 rounded-sm" style={{ background: 'rgba(34,197,94,.28)' }} /> {applicant.name} is free
+          <span className="h-2.5 w-3.5 rounded-sm" style={{ background: 'rgba(34,197,94,.28)' }} /> {applicant.name} can work
         </span>
-        {program && (
+        {job && (
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-3.5 rounded-sm" style={{ border: `2px solid ${anyConflict ? '#DC2626' : '#16A34A'}` }} /> {program.id} class times {anyConflict ? '(conflict)' : '(fits)'}
+            <span className="h-2.5 w-3.5 rounded-sm" style={{ border: `2px solid ${anyConflict ? '#DC2626' : '#16A34A'}` }} /> {job.id} work hours {anyConflict ? '(conflict)' : '(fits)'}
           </span>
         )}
       </div>

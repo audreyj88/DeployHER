@@ -91,7 +91,8 @@ export function Floor({ map, color = '#ffffff' }: { map: THREE.Texture; color?: 
   return (
     <mesh rotation-x={-Math.PI / 2} position-y={0.006} receiveShadow>
       <planeGeometry args={[ROOM_W, ROOM_D]} />
-      <meshStandardMaterial map={map} color={color} roughness={0.85} polygonOffset polygonOffsetFactor={-1} />
+      {/* No polygonOffset: its slope term grows when zoomed out and lifts the floor through the door mat (z-fighting). */}
+      <meshStandardMaterial map={map} color={color} roughness={0.85} />
     </mesh>
   )
 }

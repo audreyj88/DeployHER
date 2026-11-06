@@ -9,7 +9,7 @@ export interface Seat {
   heading: number
 }
 
-/** Pathways Forward: visitor chair faces +x toward Maya's chair. */
+/** Next Chapter: visitor chair faces +x toward Maya's chair. */
 export const INTERVIEW_VISITOR: Seat = { place: 'interview', x: 3.75, z: -3.75, heading: Math.PI / 2 }
 export const INTERVIEW_MAYA: Seat = { place: 'interview', x: 6.65, z: -3.75, heading: -Math.PI / 2 }
 

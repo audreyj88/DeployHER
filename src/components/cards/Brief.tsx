@@ -7,7 +7,7 @@ export function BriefView({ brief, accent = '#2A9D8F', showFacts = true }: { bri
     return <p className="text-[13px] text-slate-500">The client brief unlocks after the interview.</p>
   }
   const rows: [string, string, boolean?][] = [
-    ['Client', 'Pathways Forward · Maya Chen, Executive Director (fictional)'],
+    ['Client', 'Next Chapter · Maya Chen, Executive Director (fictional)'],
     ['They asked for', brief.statedRequest],
     ['Real job to be done', brief.trueJob, true],
     ['How it works today', brief.currentProcess],

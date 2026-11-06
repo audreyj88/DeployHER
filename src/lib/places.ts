@@ -35,7 +35,7 @@ export interface Place {
 
 export const PLACES: Place[] = [
   { id: 'setup', stage: 'onboarding', step: 1, label: 'Setup', title: 'The Greenhouse', accent: '#2F7D4F', blurb: 'Where your skills take root. Start from what you already know.', angleDeg: 150, radius: 24.5 },
-  { id: 'interview', stage: 'client_interview', step: 2, label: 'Discover', title: 'Pathways Forward', accent: '#2A9D8F', blurb: 'Interview Maya about what her team really needs.', angleDeg: 90, radius: 25 },
+  { id: 'interview', stage: 'client_interview', step: 2, label: 'Discover', title: 'Next Chapter · Client Interview', accent: '#2A9D8F', blurb: 'Interview Maya about what her team really needs.', angleDeg: 90, radius: 25 },
   { id: 'debrief', stage: 'discovery_debrief', step: 3, label: 'Debrief', title: 'The Coffee Break', accent: '#9A5B3A', blurb: 'Grab a coffee with your coach: what you found, what you missed, and the full client brief.', angleDeg: 30, radius: 24.5 },
   { id: 'lab', stage: 'agent_troubleshooting', step: 4, label: 'Make It Work', title: 'Make It Work Lab', accent: '#D9734A', blurb: 'Test a real AI assistant, find the failure, fix it, test again.', angleDeg: -30, radius: 24.5 },
   { id: 'launch', stage: 'rollout_decision', step: 5, label: 'Launch', title: 'Launch Pad', accent: '#C8475D', blurb: 'Decide whether, and how, to roll it out.', angleDeg: -90, radius: 25 },

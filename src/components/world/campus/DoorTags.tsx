@@ -4,10 +4,12 @@ import { getTagLayer } from '../Tag'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
+import { Check } from 'lucide-react'
 import * as THREE from 'three'
 import { chipState, nextPlace } from '@/lib/mission'
 import { PLACES, type PlaceId } from '@/lib/places'
 import { useGame } from '@/store/game'
+import { unlockRoom } from '../../cards/Cards'
 import { camInfo } from '../state'
 import { doorPoint } from './geo'
 
@@ -92,7 +94,7 @@ export function DoorTags() {
       {info.map(({ p, st, next }) => {
         const locked = st === 'locked'
         const done = st === 'done' || st === 'skipped'
-        const text = p.id === 'interview' ? 'Pathways Forward · Interview' : p.title
+        const text = p.title
         return (
           <div
             key={p.id}
@@ -100,8 +102,26 @@ export function DoorTags() {
             className={`lbl lbl-room ${locked ? 'st-locked' : ''} ${done ? 'st-done' : ''} ${next ? 'next' : ''}`}
             style={{ position: 'absolute', left: 0, top: 0, ['--accent' as string]: p.accent } as CSSProperties}
           >
-            {locked && <LockIcon />}
-            {done && <span className="done-disc">✓</span>}
+            {locked && (
+              <button
+                type="button"
+                className="lbl-unlock"
+                title={`Unlock ${p.title} (demo)`}
+                aria-label={`Unlock ${p.title}`}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  void unlockRoom(p.id)
+                }}
+              >
+                <LockIcon />
+              </button>
+            )}
+            {done && (
+              <span className="done-disc">
+                <Check size={11} strokeWidth={3.5} />
+              </span>
+            )}
             <span>{text}</span>
           </div>
         )

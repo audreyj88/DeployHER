@@ -1,9 +1,9 @@
 'use client'
 import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Coffee, Keyboard, Lock, MessageCircle, Mic, MicOff, PartyPopper, Timer, Volume2, VolumeX, X } from 'lucide-react'
 import { placeById } from '@/lib/places'
 import { useGame } from '@/store/game'
-import { DebriefContent } from './Debrief'
 import { Halo, MicMeter } from './interview/Halo'
 import { MayaPortrait } from './MayaPortrait'
 import { Btn, CardShell, ErrorStrip, ThinkingDots, useAct, useBusy } from './ui'
@@ -36,51 +36,40 @@ function useElapsed(startedAt: number | null, running: boolean) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
-// ---------------------------------------------------------------- Feedback
+// ---------------------------------------------------------------- Hand-off
+/** After the interview: a short "great work" and a nudge to the Coffee Break, where the coach gives the feedback. */
 function FeedbackCard() {
   const set = useGame((s) => s.set)
   const walkTo = useGame((s) => s.walkTo)
-  const reviewing = useBusy('interview_end')
   const close = () => set({ card: null, error: null, seatedAt: null })
+  const toCoffee = () => {
+    close()
+    walkTo({ kind: 'room', id: 'debrief' })
+  }
   return (
-    <CardShell place="interview" className="card-interview feedback" onClose={reviewing ? undefined : close}>
+    <CardShell place="interview" className="card-interview feedback" onClose={close}>
       <div className="p-5 sm:p-6">
         <div className="mb-4 flex items-center gap-3">
           <MayaPortrait size={52} />
           <div className="min-w-0 flex-1">
             <div className="text-[11px] font-bold uppercase tracking-[.14em]" style={{ color: ACCENT }}>
-              DeployHER feedback
+              Interview complete
             </div>
-            <h2 className="text-[19px] font-extrabold tracking-tight text-slate-900">How your conversation with Maya went</h2>
+            <h2 className="text-[22px] font-extrabold tracking-tight text-slate-900">Great work! <PartyPopper size={22} className="ml-1 inline align-[-0.1em] text-amber-500" />
+            </h2>
           </div>
-          {!reviewing && (
-            <button onClick={close} aria-label="Close" className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-black/5">
-              ✕
-            </button>
-          )}
+          <button onClick={close} aria-label="Close" className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-black/5">
+            <X size={17} />
+          </button>
         </div>
-        {reviewing ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-teal-200 bg-teal-50/70 p-4 text-[13.5px] text-teal-900">
-            <ThinkingDots color={ACCENT} />
-            DeployHER is reviewing your conversation…
-          </div>
-        ) : (
-          <DebriefContent
-            footer={
-              <div className="flex justify-end">
-                <Btn
-                  accent={placeById('debrief').accent}
-                  onClick={() => {
-                    close()
-                    walkTo({ kind: 'room', id: 'debrief' })
-                  }}
-                >
-                  Grab a coffee with Nia →
-                </Btn>
-              </div>
-            }
-          />
-        )}
+        <p className="text-[14.5px] leading-relaxed text-slate-700">
+          You just ran a real client discovery conversation with Maya. Let’s head to the Coffee Break, where your coach Nia will give you feedback on how your client discovery went.
+        </p>
+        <div className="mt-5 flex justify-end">
+          <Btn accent={placeById('debrief').accent} onClick={toCoffee}>
+            <Coffee size={15} /> Head to the Coffee Break →
+          </Btn>
+        </div>
       </div>
     </CardShell>
   )
@@ -130,7 +119,7 @@ function MayaScene({
       </div>
       <div className="relative text-center">
         <div className="text-[17px] font-bold">Maya Chen</div>
-        <div className="text-[12px] text-white/70">Executive Director, Pathways Forward</div>
+        <div className="text-[12px] text-white/70">Executive Director, Next Chapter</div>
         <div className="mt-2 flex h-5 items-center justify-center gap-2 text-[12.5px] text-white/85">
           {showDots && <ThinkingDots color="#5EEAD4" />}
           <span>{statusText}</span>
@@ -401,6 +390,8 @@ function InterviewInner() {
     try {
       sessionStorage.removeItem(CAP_KEY)
     } catch {}
+    // Nia starts reading the transcript while the learner walks to the Coffee Break.
+    void act({ type: 'interview_grade' })
   }
 
   const isLive = phase === 'live' || phase === 'connecting' || phase === 'ending' || phase === 'mic'
@@ -438,15 +429,15 @@ function InterviewInner() {
           <div className="flex flex-col p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div className="text-[11px] font-bold uppercase tracking-[.14em]" style={{ color: ACCENT }}>
-                Pathways Forward · Discover
+                Next Chapter · Client Interview
               </div>
               <button onClick={close} aria-label="Close" className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-black/5">
-                ✕
+                <X size={17} />
               </button>
             </div>
             <h2 className="mt-1 text-[22px] font-extrabold leading-tight tracking-tight text-slate-900">You take a seat across from Maya.</h2>
             <p className="mt-1.5 text-[13.5px] text-slate-600">
-              Your job: find out what her team actually needs before anyone builds anything. She thinks she wants a chatbot. Ask about the work, not the tool.
+              Your job: find out what her team actually needs before anyone builds anything. She thinks she wants an AI chatbot. Ask about the work, not the tool.
             </p>
             <ErrorStrip />
             {micError && (
@@ -461,30 +452,42 @@ function InterviewInner() {
               {voice ? (
                 <>
                   <li className="flex gap-2.5">
-                    <span>🗣️</span>
+<span className="mt-0.5 shrink-0" style={{ color: ACCENT }}>
+                      <MessageCircle size={16} />
+                    </span>
                     <span>Just talk, like you’re sitting across from her. You can interrupt her.</span>
                   </li>
                   <li className="flex gap-2.5">
-                    <span>⏱️</span>
+<span className="mt-0.5 shrink-0" style={{ color: ACCENT }}>
+                      <Timer size={16} />
+                    </span>
                     <span>About 4–8 questions is plenty. Wrap up whenever you’re ready.</span>
                   </li>
                   <li className="flex gap-2.5">
-                    <span>🔒</span>
+<span className="mt-0.5 shrink-0" style={{ color: ACCENT }}>
+                      <Lock size={16} />
+                    </span>
                     <span>Uses your microphone (via ElevenLabs). No audio is recorded; the words are kept so DeployHER can give you feedback.</span>
                   </li>
                 </>
               ) : (
                 <>
                   <li className="flex gap-2.5">
-                    <span>⌨️</span>
+<span className="mt-0.5 shrink-0" style={{ color: ACCENT }}>
+                      <Keyboard size={16} />
+                    </span>
                     <span>Type your questions, one at a time. Maya answers like she would in person.</span>
                   </li>
                   <li className="flex gap-2.5">
-                    <span>⏱️</span>
+<span className="mt-0.5 shrink-0" style={{ color: ACCENT }}>
+                      <Timer size={16} />
+                    </span>
                     <span>About 4–8 questions is plenty. Wrap up whenever you’re ready.</span>
                   </li>
                   <li className="flex gap-2.5">
-                    <span>🔒</span>
+<span className="mt-0.5 shrink-0" style={{ color: ACCENT }}>
+                      <Lock size={16} />
+                    </span>
                     <span>The conversation is kept on this local server for your session only.</span>
                   </li>
                 </>
@@ -495,7 +498,7 @@ function InterviewInner() {
               {voice ? (
                 <>
                   <Btn accent={ACCENT} onClick={() => startVoice(false)}>
-                    🎙️ Start talking
+                    <Mic size={15} /> Start talking
                   </Btn>
                   <Btn variant="ghost" onClick={() => setPreferTyping(true)}>
                     Prefer typing?
@@ -546,14 +549,14 @@ function InterviewInner() {
                       aria-label={muted ? 'Unmute your mic' : 'Mute your mic'}
                       className={`grid h-11 w-11 place-items-center rounded-full border border-white/20 backdrop-blur transition ${muted ? 'bg-amber-400/30' : 'bg-white/10 hover:bg-white/20'}`}
                     >
-                      {muted ? '🔇' : '🎙️'}
+                      {muted ? <MicOff size={19} className="text-white" /> : <Mic size={19} className="text-white" />}
                     </button>
                     <button
                       onClick={() => setMayaVolume(mayaVolume ? 0 : 1)}
                       aria-label={mayaVolume ? 'Turn Maya’s voice off' : 'Turn Maya’s voice on'}
                       className={`grid h-11 w-11 place-items-center rounded-full border border-white/20 backdrop-blur transition ${mayaVolume ? 'bg-white/10 hover:bg-white/20' : 'bg-amber-400/30'}`}
                     >
-                      {mayaVolume ? '🔊' : '🔈'}
+                      {mayaVolume ? <Volume2 size={19} className="text-white" /> : <VolumeX size={19} className="text-white" />}
                     </button>
                   </div>
                   <div className="text-center">

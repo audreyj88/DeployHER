@@ -2,12 +2,12 @@
 
 **Closing the gender gap in the AI economy.** DeployHER is a playable AI-deployment apprenticeship set in a walkable, toy-like 3D campus.
 
-You walk six rooms arranged in a ring around a central plaza. Each room is one step of a client engagement for **Pathways Forward**, a fictional nonprofit run by **Maya Chen**:
+You walk six rooms arranged in a ring around a central plaza. Each room is one step of a client engagement for **Next Chapter**, a fictional nonprofit run by **Maya Chen** that helps women return to paid work after caregiving breaks:
 
 | # | Room | What you do |
 |---|------|-------------|
 | 1 | The Greenhouse | Map what you already know to deployment skills |
-| 2 | Pathways Forward | Interview Maya (by voice or by typing) to find the real problem |
+| 2 | Next Chapter · Client Interview | Interview Maya (by voice or by typing) to find the real problem |
 | 3 | The Coffee Break | Debrief with your coach Nia: your score, what you missed, the full client brief |
 | 4 | Make It Work Lab | Test a real AI agent, find the failure, fix it, test again |
 | 5 | Launch Pad | Decide whether, and how, to roll it out |
@@ -44,7 +44,7 @@ ELEVENLABS_API_KEY=...
 - **Stack:** Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, three.js with @react-three/fiber, drei and postprocessing, zustand, zod, AI SDK 7 with `@ai-sdk/anthropic`, and ElevenLabs Agents over WebRTC.
 - **Sessions** are JSON files in `.sessions/`, keyed by a random httpOnly cookie. A refresh resumes your mission, and your spot on campus is kept in `localStorage`.
 - **The server enforces the stage rules.** Hidden facts, the rubric and the client brief never reach the browser before the debrief.
-- **The policy engine** (`src/lib/policy.ts`) is plain code. It checks every agent answer against the client's rules: schedule fit, delivery, prerequisites, ask-when-unknown, and draft-never-send.
+- **The policy engine** (`src/lib/policy.ts`) is plain code. It checks every agent answer against the client's rules: experience requirements, minimum pay, hours, work location, ask-when-unknown, and draft-never-send.
 - **Grading** cites turn IDs and verbatim quotes. The server drops any evidence that isn't in the transcript, sets unsupported scores to 0, and sums the total itself.
 
 ```bash

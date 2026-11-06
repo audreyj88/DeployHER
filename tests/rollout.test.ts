@@ -18,7 +18,7 @@ test('"No rule" cancels other rules and pre-mortem is scored', () => {
     choice: 'limited_pilot',
     metrics: ['accept_rate'],
     rules: ['no_rule', 'pause_conflict'],
-    premortem: { answers: { busy_week: 'untested', spanish: 'untested', evenings: 'untested', class_moves: 'tested' }, checked: true, skipped: false },
+    premortem: { answers: { busy_week: 'untested', spanish: 'untested', school_hours: 'untested', job_changes: 'tested' }, checked: true, skipped: false },
     testsRun: true,
   })
   assert.equal(r.hasPauseRule, false)

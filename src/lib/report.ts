@@ -19,13 +19,22 @@ export const BOOK_COLOR: Record<SkillStatus, string> = {
   not_assessed: '#CBD5E1',
 }
 
+/** Roles that lean on the people skills practiced here; most don't require coding. */
 export const CAREERS = [
   'AI implementation specialist',
+  'AI solutions consultant',
+  'AI adoption & change lead',
+  'AI program manager',
+  'Customer success manager (AI products)',
+  'AI enablement & training specialist',
+  'AI evaluation & quality analyst',
+  'Responsible AI & policy analyst',
   'AI deployment strategist',
   'Forward-deployed PM',
-  'AI solutions consultant',
-  'Technical forward-deployed engineer (with deeper engineering skills)',
 ]
+
+export const CAREERS_INTRO = 'Most of these roles don’t require coding. They need what you practiced today: asking good questions, understanding the people a tool serves, checking AI work, and making careful launch calls.'
+export const CAREERS_TECHNICAL = 'Enjoyed the technical side? Forward-deployed engineering is a great path to grow into.'
 
 export const CAVEAT = 'Introductory simulation; not professional certification.'
 
@@ -72,13 +81,13 @@ export function computeSkills(s: Session): SkillResult[] {
   if (skipped('interview') || !g) {
     out.push({ key: 'constraints', label: 'Finding hard constraints', status: 'not_assessed', explanation: 'The client interview was skipped or not scored, so constraints were learned from the brief.', evidence: [] })
   } else {
-    const found = g.discoveredFacts.includes('schedule')
+    const found = ['schedule', 'location', 'pay'].some((f) => g.discoveredFacts.includes(f))
     const c = g.rubric.find((r) => r.key === 'constraints')!
     out.push({
       key: 'constraints',
       label: 'Finding hard constraints',
       status: found ? 'demonstrated_independently' : 'not_yet_demonstrated',
-      explanation: found ? 'You got Maya to tell you about applicants’ schedule limits during the interview.' : 'The schedule constraint didn’t come up in the interview; you learned it in the debrief.',
+      explanation: found ? 'You got Maya to tell you about applicants’ hours, location or pay needs during the interview.' : 'Applicants’ hours, location and pay needs didn’t come up in the interview; you learned them in the debrief.',
       evidence: c.evidence.map((e) => quoteRef(s, e.turnId, e.quote)),
     })
   }
@@ -92,7 +101,7 @@ export function computeSkills(s: Session): SkillResult[] {
     const status: SkillStatus = spot.correct ? (spot.hint ? 'demonstrated_with_help' : 'demonstrated_independently') : 'practiced'
     const ev: EvidenceRef[] = []
     const r = first && t02(first)
-    if (r) ev.push({ kind: 'test', label: 'Test T02 Sofia', text: `evenings only · agent ${r.answer?.programId ? `recommended ${r.answer.programId}` : 'gave no program'} · ${r.pass ? 'right' : 'wrong'}` })
+    if (r) ev.push({ kind: 'test', label: 'Test T02 Sofia', text: `school hours, remote or short commute, $25/hr minimum · agent ${r.answer?.jobId ? `recommended ${r.answer.jobId}` : 'gave no job'} · ${r.pass ? 'right' : 'wrong'}` })
     out.push({
       key: 'evaluating',
       label: 'Evaluating AI outputs',
@@ -115,10 +124,10 @@ export function computeSkills(s: Session): SkillResult[] {
       label: 'Improving reliability',
       status,
       explanation: fixedByCheck
-        ? 'You added a schedule check in code, and Sofia’s test passed on the rerun.'
+        ? 'You added a schedule & location check in code, and Sofia’s test passed on the rerun.'
         : fixedByPrompt
           ? 'An instruction to the AI made Sofia’s test pass, but nothing guarantees it holds for the next applicant.'
-          : 'You ran the tests; Sofia’s schedule bug wasn’t fixed yet.',
+          : 'You ran the tests; the bug that sent Sofia a full-time, on-site job wasn’t fixed yet.',
       evidence: ev,
     })
   }
@@ -161,7 +170,7 @@ export function fallbackWords(s: Session, skills: SkillResult[]) {
   const reliability = skills.find((k) => k.key === 'reliability')
   const headline =
     reliability?.status === 'demonstrated_independently'
-      ? 'You caught the schedule bug before it reached anyone'
+      ? 'You caught the job-fit bug before it reached anyone'
       : ind.length
         ? 'You finished your first deployment mission'
         : 'You walked a full deployment, start to finish'
@@ -173,7 +182,7 @@ export function fallbackWords(s: Session, skills: SkillResult[]) {
   if (!parts.length) parts.push('You explored the mission at your own pace.')
   const next: string[] = []
   if (skills.find((k) => k.key === 'discovery')?.status !== 'demonstrated_independently') next.push('Practice asking “why” twice before talking about solutions.')
-  if (reliability?.status !== 'demonstrated_independently') next.push('Rerun the lab and put the schedule rule in code, not just in the instructions.')
+  if (reliability?.status !== 'demonstrated_independently') next.push('Rerun the lab and put the schedule and location rules in code, not just in the instructions.')
   next.push('Write three acceptance tests for a tool you use at work or school.')
   return { headline, summary: parts.slice(0, 3).join(' '), nextSteps: next.slice(0, 3) }
 }

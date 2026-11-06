@@ -1,7 +1,8 @@
 'use client'
 // Step 6: add a tricky applicant (from an idea or built by hand), rerun, see if the agent got her right.
 import { useState } from 'react'
-import { applicantFromSpec, AVAILABILITY_OPTIONS, CUSTOM_TOPICS, TEST_IDEAS, type AvailabilityKey, type CustomSpec, type Programming, type Topic } from '@/lib/catalog'
+import { Check, Scale, X } from 'lucide-react'
+import { applicantFromSpec, AVAILABILITY_OPTIONS, CUSTOM_TOPICS, PAY_OPTIONS, TEST_IDEAS, WORKPLACE_OPTIONS, workplaceShort, type AvailabilityKey, type CustomSpec, type Experience, type Topic, type Workplace } from '@/lib/catalog'
 import { expectedFor } from '@/lib/policy'
 import type { LabRun, SessionView } from '@/lib/types'
 import { Btn, useAct, useBusy } from '../ui'
@@ -12,9 +13,8 @@ const MAX = 2
 
 function chipsFor(spec: CustomSpec) {
   const av = AVAILABILITY_OPTIONS.find((a) => a.key === spec.availability)!.label
-  const c = [spec.interests.join(', '), av, spec.programming === 'yes' ? 'can code' : spec.programming === 'no' ? 'no coding' : 'coding unknown']
-  if (spec.remoteOnly) c.push('remote only')
-  if (spec.asksForAction) c.push('asks to be enrolled')
+  const c = [spec.interests.join(', '), av, workplaceShort(spec.workplace), `min $${spec.minPay}/hr`, spec.supervised === 'yes' ? 'has supervised' : spec.supervised === 'no' ? 'hasn’t supervised' : 'supervising unknown']
+  if (spec.asksForAction) c.push('asks to apply now')
   return c
 }
 
@@ -25,7 +25,7 @@ export function YourTest({ s, onRun, lastRun }: { s: SessionView; onRun: () => v
   const adding = useBusy('lab_custom_add')
   const running = useBusy('lab_run')
   const [building, setBuilding] = useState(false)
-  const [form, setForm] = useState<CustomSpec>({ name: '', interests: [], availability: 'weekday_evenings', programming: 'unknown', remoteOnly: false, asksForAction: false })
+  const [form, setForm] = useState<CustomSpec>({ name: '', interests: [], availability: 'school_hours', supervised: 'unknown', workplace: 'any', minPay: 22, asksForAction: false })
   const customs = s.lab.customs
   const full = customs.length >= MAX
   const lastNames = new Set(lastRun?.results.filter((r) => r.custom).map((r) => r.name) ?? [])
@@ -55,7 +55,7 @@ export function YourTest({ s, onRun, lastRun }: { s: SessionView; onRun: () => v
               <Avatar name={c.name} id={`C${i + 1}`} size={20} />
               {c.name}
               <button className="grid h-5 w-5 place-items-center rounded-full text-violet-400 hover:bg-violet-100 hover:text-violet-800" aria-label={`Remove ${c.name}`} onClick={() => act({ type: 'lab_custom_remove', index: i })}>
-                ✕
+                <X size={12} />
               </button>
             </span>
           ))}
@@ -102,10 +102,16 @@ export function YourTest({ s, onRun, lastRun }: { s: SessionView; onRun: () => v
                   ))}
                 </div>
                 <p className="mt-1.5 text-[12px] text-slate-600">{idea.why}</p>
-                <p className="mt-1.5 rounded-lg bg-emerald-50 px-2 py-1 text-[11.5px] text-emerald-800">⚖️ Right answer: {ex.text}</p>
+                <p className="mt-1.5 rounded-lg bg-emerald-50 px-2 py-1 text-[11.5px] text-emerald-800">
+                  <Scale size={12} className="mr-1 inline align-[-0.15em]" />
+                  Right answer: {ex.text}
+                </p>
                 <div className="mt-auto pt-2">
                   {inTests ? (
-                    <span className="text-[12.5px] font-semibold text-emerald-700">✓ In the tests</span>
+                    <span className="text-[12.5px] font-semibold text-emerald-700">
+                      <Check size={13} strokeWidth={3} className="mr-1 inline align-[-0.15em]" />
+                      In the tests
+                    </span>
                   ) : (
                     <Btn variant="soft" accent={ACCENT} disabled={full} busy={adding} onClick={() => act({ type: 'lab_custom_add', spec: idea.spec })}>
                       + Add {idea.spec.name}
@@ -135,7 +141,7 @@ export function YourTest({ s, onRun, lastRun }: { s: SessionView; onRun: () => v
               />
             </label>
             <label className="block text-[12px] font-semibold text-slate-600">
-              When she’s free
+              When she can work
               <select value={form.availability} onChange={(e) => setForm({ ...form, availability: e.target.value as AvailabilityKey })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13.5px] font-normal text-slate-900">
                 {AVAILABILITY_OPTIONS.map((o) => (
                   <option key={o.key} value={o.key}>
@@ -146,7 +152,7 @@ export function YourTest({ s, onRun, lastRun }: { s: SessionView; onRun: () => v
             </label>
           </div>
           <div>
-            <div className="mb-1 text-[12px] font-semibold text-slate-600">Interested in (up to 3)</div>
+            <div className="mb-1 text-[12px] font-semibold text-slate-600">Experience and interests (up to 3)</div>
             <div className="flex flex-wrap gap-1.5">
               {CUSTOM_TOPICS.map((t) => {
                 const on = form.interests.includes(t)
@@ -165,26 +171,45 @@ export function YourTest({ s, onRun, lastRun }: { s: SessionView; onRun: () => v
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-[12px] font-semibold text-slate-600">
-              Can she code?
-              <select value={form.programming} onChange={(e) => setForm({ ...form, programming: e.target.value as Programming })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13.5px] font-normal text-slate-900">
+              Has she supervised a team?
+              <select value={form.supervised} onChange={(e) => setForm({ ...form, supervised: e.target.value as Experience })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13.5px] font-normal text-slate-900">
                 <option value="no">No</option>
                 <option value="yes">Yes</option>
                 <option value="unknown">She didn’t say</option>
               </select>
             </label>
+            <label className="block text-[12px] font-semibold text-slate-600">
+              Where she can work
+              <select value={form.workplace} onChange={(e) => setForm({ ...form, workplace: e.target.value as Workplace })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13.5px] font-normal text-slate-900">
+                {WORKPLACE_OPTIONS.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-[12px] font-semibold text-slate-600">
+              Minimum pay
+              <select value={form.minPay} onChange={(e) => setForm({ ...form, minPay: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13.5px] font-normal text-slate-900">
+                {PAY_OPTIONS.map((p) => (
+                  <option key={p} value={p}>
+                    ${p}/hr
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="flex flex-col justify-end gap-1.5 text-[13px] text-slate-700">
               <label className="inline-flex items-center gap-2">
-                <input type="checkbox" checked={form.remoteOnly} onChange={(e) => setForm({ ...form, remoteOnly: e.target.checked })} className="h-4 w-4 accent-orange-500" />
-                Remote only
-              </label>
-              <label className="inline-flex items-center gap-2">
                 <input type="checkbox" checked={form.asksForAction} onChange={(e) => setForm({ ...form, asksForAction: e.target.checked })} className="h-4 w-4 accent-orange-500" />
-                Asks to be enrolled
+                Asks to apply right now
               </label>
             </div>
           </div>
           <div className="rounded-xl bg-emerald-50 px-3 py-2 text-[12.5px] text-emerald-900">
-            <b>⚖️ Right answer: </b>
+            <b>
+              <Scale size={13} className="mr-1 inline align-[-0.15em]" />
+              Right answer:{' '}
+            </b>
             {preview ? preview.text : 'Pick a name and at least one interest.'}
             <div className="mt-0.5 text-[11.5px] text-emerald-700">The grader works this out from the client’s rules, so you don’t have to.</div>
           </div>

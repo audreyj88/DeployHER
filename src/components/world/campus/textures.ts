@@ -2,6 +2,8 @@
 // All textures are drawn on canvas. No image files.
 import * as THREE from 'three'
 import { rng } from './rng'
+import { Check } from 'lucide'
+import { strokeIcon } from '../lucide'
 
 const H_PATH = 'M0 0H19V42L53 31V0H72V100H53V50L19 61V100H0Z'
 const cache = new Map<string, THREE.Texture>()
@@ -87,9 +89,7 @@ export const stationTexture = (state: StationState, n: number, accent: string) =
     g.textAlign = 'center'
     g.textBaseline = 'middle'
     if (state === 'done') {
-      g.fillStyle = '#FFFFFF'
-      g.font = '800 130px system-ui, sans-serif'
-      g.fillText('✓', 128, 136)
+      strokeIcon(g, Check, 128 - 70, 128 - 70, 140, '#FFFFFF', 3.4)
     } else if (state === 'later') {
       g.fillStyle = '#FFFFFF'
       g.font = '800 120px system-ui, sans-serif'

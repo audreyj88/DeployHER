@@ -1,5 +1,5 @@
 'use client'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { roomStatus } from '@/lib/mission'
 import { placeById } from '@/lib/places'
 import type { RubricScore, Turn } from '@/lib/types'
@@ -90,13 +90,19 @@ export function DebriefContent({ footer }: { footer?: ReactNode }) {
   const set = useGame((s) => s.set)
   const walkTo = useGame((s) => s.walkTo)
   const act = useAct()
-  const grading = useBusy('interview_end', 'grade_retry')
+  const grading = useBusy('interview_end', 'interview_grade', 'grade_retry')
   const advancing = useBusy('debrief_done')
   const [showTx, setShowTx] = useState(false)
   const [showBrief, setShowBrief] = useState(false)
   const g = session.grade
   const skipped = session.skipped.includes('interview')
   const debriefCurrent = roomStatus(session, 'debrief') === 'current'
+  const needsGrade = session.interview.status === 'ended' && !skipped && !g && !session.gradeError && !grading
+
+  useEffect(() => {
+    if (needsGrade) void act({ type: 'interview_grade' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needsGrade])
 
   const toLab = async () => {
     if (debriefCurrent) {
@@ -129,7 +135,7 @@ export function DebriefContent({ footer }: { footer?: ReactNode }) {
   }
 
   if (session.interview.status !== 'ended') {
-    return <p className="text-[13.5px] text-slate-600">Your debrief appears here after you talk with Maya at Pathways Forward.</p>
+    return <p className="text-[13.5px] text-slate-600">Your debrief appears here after you talk with Maya at Next Chapter.</p>
   }
 
   if (!g) {

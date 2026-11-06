@@ -1,9 +1,10 @@
 'use client'
+import { Check, ChevronsRight, DoorOpen, Lock, RotateCcw, X } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { chipState, nextPlace, previousPlace, roomStatus, SKIPPABLE, type ChipState } from '@/lib/mission'
 import { PLACES, placeById, type PlaceId } from '@/lib/places'
 import { useGame } from '@/store/game'
-import { openRoomUI } from '../cards/Cards'
+import { openRoomUI, unlockRoom } from '../cards/Cards'
 import { LogoPill } from '../brand/Brand'
 
 const pill = 'pointer-events-auto rounded-full bg-white/90 backdrop-blur-md shadow-lg text-[13px] font-semibold text-slate-800'
@@ -35,12 +36,29 @@ function Chip({ id, st, n }: { id: PlaceId; st: ChipState; n: number }) {
     current: { background: 'rgba(255,255,255,.3)', color: '#fff' },
     locked: { background: '#E2E8F0', color: '#94A3B8' },
   }
-  const glyph = st === 'done' ? '✓' : st === 'later' ? '…' : st === 'skipped' ? '–' : String(n)
+  const glyph = st === 'done' ? <Check size={12} strokeWidth={3} aria-label="Done" /> : st === 'later' ? '…' : st === 'skipped' ? '–' : String(n)
   const current = st === 'current'
+  if (st === 'locked') {
+    return (
+      <button
+        type="button"
+        onClick={() => void unlockRoom(id)}
+        className="flex items-center gap-1.5 rounded-full py-0.5 pl-0.5 text-[11px] font-bold transition hover:bg-slate-100"
+        style={{ paddingRight: 4, color: '#94A3B8' }}
+        title={`${p.label} · locked. Click to unlock (demo)`}
+        aria-label={`Unlock ${p.title}`}
+      >
+        <span className="grid h-4 w-4 place-items-center rounded-full" style={disc.locked}>
+          <Lock size={9} strokeWidth={3} />
+        </span>
+        <span className="hidden xl:inline">{p.label}</span>
+      </button>
+    )
+  }
   return (
     <div
       className="flex items-center gap-1.5 rounded-full py-0.5 pl-0.5 text-[11px] font-bold"
-      style={current ? { background: p.accent, color: '#fff', paddingRight: 9 } : { paddingRight: 4, color: st === 'locked' ? '#94A3B8' : '#334155' }}
+      style={current ? { background: p.accent, color: '#fff', paddingRight: 9 } : { paddingRight: 4, color: '#334155' }}
       title={`${p.label} · ${st === 'later' ? 'saved for later' : st}`}
     >
       <span className="grid h-4 w-4 place-items-center rounded-full text-[10px]" style={disc[st]}>
@@ -64,7 +82,8 @@ function Menu() {
         <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white p-2 text-[13px] shadow-xl">
           {!confirm ? (
             <button className="w-full rounded-xl px-3 py-2 text-left font-semibold hover:bg-slate-100" onClick={() => setConfirm(true)}>
-              ↺ Restart the mission
+              <RotateCcw size={14} className="mr-1.5 inline align-[-0.15em]" />
+              Restart the mission
             </button>
           ) : (
             <div className="p-2">
@@ -150,12 +169,14 @@ function RoomControls() {
       <div className="flex gap-2">
         {hasWork && (
           <button className={`${pill} px-3.5 py-2`} onClick={() => setConfirm('reset')}>
-            ↺ Reset this room
+            <RotateCcw size={14} className="mr-1.5 inline align-[-0.15em]" />
+            Reset this room
           </button>
         )}
         {canSkip && (
           <button className={`${pill} px-3.5 py-2`} onClick={() => setConfirm('skip')}>
-            Skip this step ⏭
+            Skip this step
+            <ChevronsRight size={15} className="ml-1 inline align-[-0.2em]" />
           </button>
         )}
       </div>
@@ -177,8 +198,14 @@ function BottomCentre() {
   if (nearLocked && !inside) {
     const prev = previousPlace(nearLocked)
     body = (
-      <div className={`${pill} px-4 py-2`}>
-        🔒 {placeById(nearLocked).title} opens after {prev ? placeById(prev).title : 'the previous room'}
+      <div className={`${pill} flex items-center gap-2 py-1.5 pl-4 pr-1.5`}>
+        <span>
+          <Lock size={14} className="mr-1.5 inline align-[-0.15em]" />
+          {placeById(nearLocked).title} opens after {prev ? placeById(prev).title : 'the previous room'}
+        </span>
+        <button className="rounded-full bg-slate-800 px-3 py-1 text-[12px] font-semibold text-white hover:bg-slate-700" onClick={() => void unlockRoom(nearLocked)}>
+          Unlock
+        </button>
       </div>
     )
   } else if (inside && roomStatus(s, inside) !== 'locked') {
@@ -186,7 +213,8 @@ function BottomCentre() {
     body = (
       <div className="flex gap-2">
         <button className={`${pill} px-4 py-2`} onClick={() => { set({ card: null, panel: null, seatedAt: null }); walkTo({ kind: 'out' }) }}>
-          ↩ Step outside
+          <DoorOpen size={15} className="mr-1.5 inline align-[-0.2em]" />
+          Step outside
         </button>
         {!panel && (
           <button className="pointer-events-auto rounded-full px-4 py-2 text-[13px] font-semibold text-white shadow-lg" style={{ background: p.accent }} onClick={() => openRoomUI(inside)}>
@@ -281,7 +309,7 @@ function Toast() {
     <div className="pointer-events-auto absolute left-1/2 top-16 flex max-w-md -translate-x-1/2 items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-800 shadow-lg">
       <span>{err}</span>
       <button onClick={() => set({ error: null })} aria-label="Dismiss">
-        ✕
+        <X size={15} />
       </button>
     </div>
   )

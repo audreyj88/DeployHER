@@ -105,7 +105,7 @@ export interface LabData {
 export type RolloutChoice = 'full_automation' | 'limited_pilot' | 'no_launch'
 export type MetricKey = 'accept_rate' | 'time_saved' | 'corrections' | 'complaints' | 'escalations'
 export type RuleKey = 'pause_conflict' | 'pause_corrections' | 'expand_after' | 'no_rule'
-export type PremortemKey = 'evenings' | 'unknown_prog' | 'no_fit' | 'enroll_today' | 'busy_week' | 'spanish' | 'class_moves' | 'blank_availability'
+export type PremortemKey = 'school_hours' | 'unknown_sup' | 'no_fit' | 'apply_today' | 'busy_week' | 'spanish' | 'job_changes' | 'blank_availability'
 
 export interface RolloutComputed {
   coversUsefulness: boolean

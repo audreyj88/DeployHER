@@ -59,7 +59,7 @@ export async function rolloutFeedback(d: Omit<NonNullable<LaunchData['decision']
     const body = await text({
       temperature: 0.3,
       maxOutputTokens: 300,
-      instructions: `You are Nia, a warm DeployHER coach. Respond to a learner's rollout decision for a fictional nonprofit's program-matching assistant in 2–3 short sentences, second person. Respond to her reasoning and pre-mortem. A well-argued choice other than a pilot gets nuance, not a scolding. Never claim the system is production-safe or ready. No lists, no markdown. Do not restate the checklist; it is appended after your words.`,
+      instructions: `You are Nia, a warm DeployHER coach. Respond to a learner's rollout decision for a fictional nonprofit's job-matching assistant, which helps caseworkers match women returning to work with job opportunities, in 2–3 short sentences, second person. Respond to her reasoning and pre-mortem. A well-argued choice other than a pilot gets nuance, not a scolding. Never claim the system is production-safe or ready. No lists, no markdown. Do not restate the checklist; it is appended after your words.`,
       prompt: `Choice: ${choice.short} (${choice.text}).\nHer reason: ${d.rationale ? `"${d.rationale}"` : '(none given)'}\nMetrics: ${d.metrics.map((m) => METRICS.find((x) => x.key === m)?.text).join('; ') || 'none'}\nRules: ${d.rules.map((r) => RULES.find((x) => x.key === r)?.text).join('; ') || 'none'}\n${premortem}\nCaseworker approval kept: ${d.computed.approvalKept ? 'yes' : 'no'}.`,
     })
     // Coach voice: 2–3 sentences, enforced in code.
@@ -89,7 +89,7 @@ export async function reportWords(s: Session, skills: SkillResult[]): Promise<{ 
       temperature: 0.3,
       maxOutputTokens: 600,
       instructions: `You write the words of a learner's DeployHER skills report. Every status and number below was computed in code; never change or contradict them, and never invent achievements.
-- headline: second person, under 10 words, specific to what she did (e.g. "You caught the schedule bug before it reached anyone").
+- headline: second person, under 10 words, specific to what she did (e.g. "You caught the job-fit bug before it reached anyone").
 - summary: 2–3 sentences, second person, warm and honest. ${confirmed ? 'You may mention her background strengths briefly.' : 'Do not mention her background.'}
 - nextSteps: 2–3 concrete next things to practice.
 Honest about limits: this is practice, not proof. No markdown.`,

@@ -33,7 +33,8 @@ export function Ground() {
       </mesh>
       {PLACES.map((p) => {
         const start = 9.2
-        const end = doorDist(p.id) + 0.6
+        // Stop at the room's front edge: overlapping the room floor z-fights when zoomed out (the decal offset outgrows the 6mm gap).
+        const end = doorDist(p.id)
         const len = end - start
         const mid = polar(start + len / 2, p.angleDeg)
         return <PathSlab key={p.id} x={mid[0]} z={mid[1]} len={len} angle={p.angleDeg} tex={pathTex} />

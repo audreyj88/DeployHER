@@ -27,7 +27,7 @@ export const ANA: Look = { skin: '#C98E64', hair: '#2B1E16', hairStyle: 'bun', t
 export const JO: Look = { skin: '#F2D3B8', hair: '#8A5A33', hairStyle: 'short', top: '#5B7DB1', bottom: '#4B5563' }
 export const LEARNER_SEATED: Look = { skin: '#E7B48F', hair: '#3A2218', hairStyle: 'long', top: '#F06A6A', bottom: '#2E3A5C', studs: true, skirt: true }
 export const THEO: Look = { skin: '#8D5A3B', hair: '#1E1512', hairStyle: 'short', top: '#F2F0EA', bottom: '#2E3442' }
-export const KAI: Look = { skin: '#E7B48F', hair: '#231A1C', hairStyle: 'short', top: '#3E4A5C', bottom: '#30455E' }
+export const KAI: Look = { skin: '#E7B48F', hair: '#5A3A22', hairStyle: 'long', top: '#4F8FA8', bottom: '#2E3442', inner: '#F2F0EA', studs: true }
 
 /** Deterministic small RNG. */
 export function mulberry32(seed: number) {

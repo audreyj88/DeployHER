@@ -1,7 +1,7 @@
 // Launch Pad content and the code that judges a plan. No model here.
 import type { LaunchData, MetricKey, PremortemKey, RolloutChoice, RolloutComputed, RuleKey } from './types.ts'
 
-export const MAYA_ROLLOUT_LINE = '“This looks great! Could we start using it for every applicant tomorrow? Maybe we could even send recommendations automatically so our team has less work.”'
+export const MAYA_ROLLOUT_LINE = '“This looks great! Could we start using it for every applicant tomorrow? Maybe we could even send job matches to applicants automatically so our team has less work.”'
 
 export const CHOICES: { key: RolloutChoice; text: string; short: string; tagline: string; reach: number; mode: 'auto' | 'approve' | 'none' }[] = [
   { key: 'full_automation', text: 'Launch fully automated recommendations for everyone tomorrow', short: 'Full launch', tagline: '100% of applicants, sent automatically', reach: 1, mode: 'auto' },
@@ -11,27 +11,27 @@ export const CHOICES: { key: RolloutChoice; text: string; short: string; tagline
 
 export const METRICS: { key: MetricKey; text: string; covers: 'reliability' | 'usefulness' }[] = [
   { key: 'accept_rate', text: 'Share of recommendations caseworkers accept as valid', covers: 'reliability' },
-  { key: 'time_saved', text: 'Screening time saved per caseworker', covers: 'usefulness' },
+  { key: 'time_saved', text: 'Matching time saved per caseworker', covers: 'usefulness' },
   { key: 'corrections', text: 'Number of recommendations staff had to correct', covers: 'reliability' },
   { key: 'complaints', text: 'Applicant complaints or confusion', covers: 'reliability' },
   { key: 'escalations', text: 'How often cases are escalated to a person', covers: 'reliability' },
 ]
 
 export const RULES: { key: RuleKey; text: string; kind: 'pause' | 'expand' | 'none' }[] = [
-  { key: 'pause_conflict', text: 'Pause if a caseworker catches a class the applicant couldn’t attend.', kind: 'pause' },
+  { key: 'pause_conflict', text: 'Pause if a caseworker catches a job that doesn’t fit the applicant’s hours, location or pay.', kind: 'pause' },
   { key: 'pause_corrections', text: 'Pause if staff correct more than 1 in 10 recommendations.', kind: 'pause' },
   { key: 'expand_after', text: 'Expand only after 4 weeks with few corrections and real time saved.', kind: 'expand' },
   { key: 'no_rule', text: 'No rule. We’ll know it when we see it.', kind: 'none' },
 ]
 
 export const PREMORTEM: { key: PremortemKey; text: string; tested: string | null; why: string }[] = [
-  { key: 'evenings', text: 'An applicant who can only come on weekday evenings', tested: 'T02', why: 'Sofia’s test checks exactly this.' },
+  { key: 'school_hours', text: 'An applicant who can only work school hours, remote or close to home', tested: 'T02', why: 'Sofia’s test checks exactly this.' },
   { key: 'busy_week', text: '300 applications landing in one busy week', tested: null, why: 'Every test ran one applicant at a time.' },
-  { key: 'unknown_prog', text: 'Someone who didn’t say whether she has programmed', tested: 'T03', why: 'Priya’s test checks the agent asks first.' },
+  { key: 'unknown_sup', text: 'Someone who didn’t say whether she has supervised a team', tested: 'T03', why: 'Priya’s test checks the agent asks first.' },
   { key: 'spanish', text: 'An application written in Spanish', tested: null, why: 'All five test applicants wrote in English.' },
-  { key: 'no_fit', text: 'An applicant no program fits', tested: 'T04', why: 'Jasmine’s test checks it doesn’t invent a match.' },
-  { key: 'class_moves', text: 'A program that moves its class times next month', tested: null, why: 'The tests used one fixed catalog.' },
-  { key: 'enroll_today', text: 'Someone asking to be enrolled today', tested: 'T05', why: 'Taylor’s test checks it drafts instead of sending.' },
+  { key: 'no_fit', text: 'An applicant no job fits, because none pays enough', tested: 'T04', why: 'Jasmine’s test checks it doesn’t invent a match.' },
+  { key: 'job_changes', text: 'An employer that switches a remote job to on-site next month', tested: null, why: 'The tests used one fixed set of job listings.' },
+  { key: 'apply_today', text: 'Someone asking for her application to be sent today', tested: 'T05', why: 'Taylor’s test checks it drafts instead of sending.' },
   { key: 'blank_availability', text: 'A form with the availability box left blank', tested: null, why: 'Every test applicant gave her availability.' },
 ]
 
