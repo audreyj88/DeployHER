@@ -33,6 +33,7 @@ interface GameState {
   walk: { target: WalkTarget; nonce: number } | null
   backToMeNonce: number
   panned: boolean
+  worldFailed: boolean
 
   load: () => Promise<void>
   act: <T = Record<string, unknown>>(a: Action) => Promise<T & { session: SessionView }>
@@ -61,6 +62,7 @@ export const useGame = create<GameState>((set, get) => ({
   walk: null,
   backToMeNonce: 0,
   panned: false,
+  worldFailed: false,
 
   load: async () => {
     const r = await fetch('/api/session', { cache: 'no-store' })

@@ -9,6 +9,7 @@ import { DOOR_W, isNorthRow, placeById, ROOM_D, ROOM_W, type PlaceId, type RoomS
 import { useGame } from '@/store/game'
 import { setGate } from '../colliders'
 import { Bench, Mat, Plant } from './props'
+import { HideInside } from './HideInside'
 import { canvasTex, mulberry32, reducedMotion, roundRect, shade, useColliders } from './util'
 
 const HW = ROOM_W / 2
@@ -141,8 +142,10 @@ export function GlassWalls({ id, accent, glass = '#EAF4FF', opacity = 0.16, heig
     <group>
       <GlassRun from={[-HW, -HD]} to={[-HW, HD]} height={height} glass={glass} opacity={opacity} accent={accent} />
       <GlassRun from={[HW, -HD]} to={[HW, HD]} height={height} glass={glass} opacity={opacity} accent={accent} />
-      <GlassRun from={[-HW, HD]} to={[-HW + seg, HD]} height={height} glass={glass} opacity={opacity} accent={accent} />
-      <GlassRun from={[HW - seg, HD]} to={[HW, HD]} height={height} glass={glass} opacity={opacity} accent={accent} />
+      <HideInside place={id}>
+        <GlassRun from={[-HW, HD]} to={[-HW + seg, HD]} height={height} glass={glass} opacity={opacity} accent={accent} />
+        <GlassRun from={[HW - seg, HD]} to={[HW, HD]} height={height} glass={glass} opacity={opacity} accent={accent} />
+      </HideInside>
       {backWall &&
         (north ? (
           <mesh position={[0, 2, -HD]} castShadow receiveShadow>
@@ -247,7 +250,8 @@ export function StatusBoard({ id, accent, status, data, position, rotationY = 0,
     t.colorSpace = THREE.SRGBColorSpace
     t.anisotropy = 4
     return { canvas: c, tex: t }
-  }, [size])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [size[0], size[1]])
   const key = JSON.stringify([data.bars, data.dots, status])
   const draw = useRef<() => void>(() => {})
   draw.current = () => {
@@ -304,7 +308,7 @@ export function StatusBoard({ id, accent, status, data, position, rotationY = 0,
   }
   useEffect(() => {
     draw.current()
-  }, [key])
+  }, [key, tex])
   useEffect(() => {
     const t = setInterval(() => draw.current(), 3000)
     return () => clearInterval(t)
@@ -399,7 +403,11 @@ export function RoomShell({
     <group>
       {floor && <Floor map={floor} />}
       {walls && <GlassWalls id={id} accent={p.accent} glass={glass} opacity={glassOpacity} />}
-      {doorHeader && <DoorFrame accent={p.accent} locked={locked} />}
+      {doorHeader && (
+        <HideInside place={id}>
+          <DoorFrame accent={p.accent} locked={locked} />
+        </HideInside>
+      )}
       <DoorMat accent={p.accent} />
       <Gate id={id} accent={p.accent} locked={locked} />
       {bp.stand && <BoardStand position={bp.position} rotationY={bp.rotationY} size={bp.size} />}

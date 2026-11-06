@@ -24,7 +24,7 @@ export function stripGeometry(pts: [number, number][], w: number, y = 0): THREE.
     uv.push(0, acc, 1, acc)
     if (i > 0) {
       const k = i * 2
-      idx.push(k - 2, k - 1, k, k - 1, k + 1, k)
+      idx.push(k - 2, k, k - 1, k - 1, k, k + 1)
     }
   }
   const g = new THREE.BufferGeometry()

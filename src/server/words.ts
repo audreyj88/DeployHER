@@ -25,11 +25,12 @@ export async function rephraseStrengths(draft: Strength[], background: string, p
 Never assume anything from gender or from a degree name alone. Don't add strengths that her words don't support. Plain, warm language.`,
       prompt: `Her background: "${background}"\nSomething she's proud of: "${proud}"\n\nDraft:\n${JSON.stringify(draft)}`,
     })
-    const both = `${background} ${proud}`.toLowerCase()
     const merged = draft.map((d) => {
       const r = out.strengths.find((x) => x.id === d.id)
       if (!r) return d
-      const fromOk = r.from && both.includes(r.from.toLowerCase().replace(/^["“]|["”]$/g, ''))
+      // The quote must come from the same answer that triggered this strength.
+      const source = (proud.toLowerCase().includes(d.from.toLowerCase()) && !background.toLowerCase().includes(d.from.toLowerCase()) ? proud : background).toLowerCase()
+      const fromOk = r.from && source.includes(r.from.toLowerCase().replace(/^["“]|["”]$/g, ''))
       return { id: d.id, label: r.label.slice(0, 60) || d.label, application: r.application.slice(0, 180) || d.application, from: fromOk ? r.from.replace(/^["“]|["”]$/g, '') : d.from }
     })
     return { strengths: merged, source: 'ai' }

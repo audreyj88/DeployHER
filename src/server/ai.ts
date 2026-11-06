@@ -7,6 +7,9 @@ export const MODEL_ID = () => process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5'
 export const hasAnthropic = () => Boolean(process.env.ANTHROPIC_API_KEY)
 export const hasVoice = () => Boolean(process.env.ELEVENLABS_API_KEY)
 
+/** Claude 5.x models reject sampling temperature; keep the spec's values for models that accept them. */
+const temp = (t: number) => (/claude-(sonnet|opus|haiku|fable)-5/.test(MODEL_ID()) ? {} : { temperature: t })
+
 export class NoKeyError extends Error {
   constructor() {
     super('No Anthropic API key is configured on this server.')
@@ -36,7 +39,7 @@ export async function structured<S extends z.ZodType>(opts: {
     model: model(),
     instructions: opts.instructions,
     output: Output.object({ schema: opts.schema }),
-    temperature: opts.temperature,
+    ...temp(opts.temperature),
     maxOutputTokens: opts.maxOutputTokens ?? 1500,
     maxRetries: 1,
   }
@@ -51,7 +54,7 @@ export async function text(opts: { instructions: string; prompt: string; tempera
     model: model(),
     instructions: opts.instructions,
     prompt: opts.prompt,
-    temperature: opts.temperature,
+    ...temp(opts.temperature),
     maxOutputTokens: Math.max(opts.maxOutputTokens ?? 600, 1000),
     maxRetries: 1,
   })

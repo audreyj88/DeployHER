@@ -202,7 +202,7 @@ function BottomCentre() {
         <span>
           Next: <b style={{ color: p.accent }}>{p.title}</b>
         </span>
-        <button className="rounded-full px-3 py-1.5 text-white" style={{ background: p.accent }} onClick={() => walkTo({ kind: 'room', id: next })}>
+        <button className="rounded-full px-3 py-1.5 text-white" style={{ background: p.accent }} onClick={() => (useGame.getState().worldFailed ? (set({ inside: next }), openRoomUI(next)) : walkTo({ kind: 'room', id: next }))}>
           Take me there →
         </button>
       </div>
