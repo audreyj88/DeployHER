@@ -4,6 +4,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 import type { Turn } from '@/lib/types'
+import { isSilenceFiller } from '@/lib/voice'
 import { MAYA_PERSONA, OPENER, VOICE_RULES } from './scenario'
 
 const CACHE = path.join(process.cwd(), '.sessions', 'eleven-agent.json')
@@ -41,6 +42,8 @@ function agentConfig() {
       turn: {
         turnEagerness: 'normal',
         speculativeTurn: true,
+        // Give learners time to think before Maya checks in ("Sorry, did I lose you?").
+        turnTimeout: 15,
       },
       conversation: { maxDurationSeconds: 900 },
     },
@@ -107,7 +110,7 @@ export async function fetchTranscript(conversationIds: string[]): Promise<{ role
     }
     for (const t of conv.transcript ?? []) {
       const text = stripTags(t.message ?? '')
-      if (!text) continue
+      if (!text || (t.role === 'user' && isSilenceFiller(text))) continue
       lines.push({ role: t.role === 'user' ? 'learner' : 'client', text })
     }
   }

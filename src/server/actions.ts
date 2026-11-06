@@ -9,6 +9,7 @@ import { draftStrengths, PRACTICE_TODAY } from '@/lib/skills-map'
 import type { Session, Turn } from '@/lib/types'
 import { errMessage, hasAnthropic } from './ai'
 import { conversationToken, fetchTranscript, MAX_RECONNECTS, mergeLines, stripTags } from './eleven'
+import { isSilenceFiller } from '@/lib/voice'
 import { addTurn, ensureOpener, gradeTranscript, learnerCount, mayaTypedReply, MAX_QUESTIONS, MIN_QUESTIONS, transcriptHash } from './interview'
 import { runAll } from './lab'
 import { OPENER, RECONNECT_LINE } from './scenario'
@@ -185,7 +186,7 @@ export async function runAction(s: Session, a: Action): Promise<Record<string, u
             lines = []
           }
           if (!lines.some((l) => l.role === 'learner') && a.captions?.length) {
-            lines = mergeLines(a.captions.map((c) => ({ role: c.role, text: stripTags(c.text) })).filter((c) => c.text))
+            lines = mergeLines(a.captions.map((c) => ({ role: c.role, text: stripTags(c.text) })).filter((c) => c.text && !(c.role === 'learner' && isSilenceFiller(c.text))))
           }
           if (lines.length) {
             // The first agent line is the scripted opener (or a reconnect line).

@@ -3,6 +3,7 @@ import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Coffee, Keyboard, Lock, MessageCircle, Mic, MicOff, PartyPopper, Timer, Volume2, VolumeX, X } from 'lucide-react'
 import { placeById } from '@/lib/places'
+import { isSilenceFiller } from '@/lib/voice'
 import { useGame } from '@/store/game'
 import { Halo, MicMeter } from './interview/Halo'
 import { MayaPortrait } from './MayaPortrait'
@@ -12,6 +13,10 @@ const ACCENT = placeById('interview').accent
 const MIN_Q = 2
 const MAX_Q = 14
 const CAP_KEY = 'dh_captions'
+/** The SDK reports "not speaking" in the short gaps between Maya's sentences; wait this long before believing it. */
+const SPEAKING_HOLD_MS = 900
+/** Caption reveal pace: about one word per 360ms, close to Maya's speaking rate. */
+const REVEAL_MS = 360
 
 type Line = { role: 'learner' | 'client'; text: string; at: number }
 type Phase = 'intro' | 'mic' | 'connecting' | 'live' | 'dropped' | 'ending' | 'typed'
@@ -22,6 +27,14 @@ function loadCaptions(): Line[] {
   } catch {
     return []
   }
+}
+
+/** Persist captions so a refresh mid-call keeps them. Returns its input. */
+function saveCaptions(next: Line[]) {
+  try {
+    sessionStorage.setItem(CAP_KEY, JSON.stringify(next))
+  } catch {}
+  return next
 }
 
 function useElapsed(startedAt: number | null, running: boolean) {
@@ -130,14 +143,16 @@ function MayaScene({
 }
 
 // ---------------------------------------------------------------- Transcript column
-function Transcript({ lines, revealCount, speaking, learnerTalking, thinking }: { lines: Line[]; revealCount: number | null; speaking: boolean; learnerTalking: boolean; thinking: boolean }) {
+/** Which of Maya's lines is being revealed (by its `at`), and how many words are showing. */
+type Reveal = { at: number; count: number }
+
+function Transcript({ lines, reveal, speaking, learnerTalking, thinking }: { lines: Line[]; reveal: Reveal | null; speaking: boolean; learnerTalking: boolean; thinking: boolean }) {
   const box = useRef<HTMLDivElement>(null)
   const pinned = useRef(true)
   useEffect(() => {
     const el = box.current
     if (el && pinned.current) el.scrollTop = el.scrollHeight
   })
-  const lastClient = lines.map((l) => l.role).lastIndexOf('client')
   return (
     <div
       ref={box}
@@ -148,14 +163,18 @@ function Transcript({ lines, revealCount, speaking, learnerTalking, thinking }: 
       className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-3"
     >
       {lines.map((l, i) => {
-        const isLatestMaya = i === lastClient && l.role === 'client' && speaking && revealCount !== null
+        // Only the line that arrived with this stretch of speech is revealed; earlier lines stay whole.
+        const isLatestMaya = l.role === 'client' && speaking && reveal !== null && l.at === reveal.at
         let content: React.ReactNode = l.text
         if (isLatestMaya) {
           const words = l.text.split(/\s+/)
           content = (
             <>
-              {words.slice(0, revealCount!).join(' ')}
-              <span className="text-slate-400"> {words.slice(revealCount!).join(' ')}</span>
+              {words.slice(0, reveal!.count).join(' ')}
+              <span className="text-slate-400">
+                {reveal!.count > 0 ? ' ' : ''}
+                {words.slice(reveal!.count).join(' ')}
+              </span>
             </>
           )
         }
@@ -203,7 +222,7 @@ function InterviewInner() {
   const [mayaVolume, setMayaVolume] = useState(1)
   const [draft, setDraft] = useState('')
   const [confirmEnd, setConfirmEnd] = useState(false)
-  const [revealCount, setRevealCount] = useState<number | null>(null)
+  const [reveal, setReveal] = useState<Reveal | null>(null)
   const [micLevel, setMicLevel] = useState(0)
   const [userTalking, setUserTalking] = useState(false)
   const endingRef = useRef(false)
@@ -212,18 +231,14 @@ function InterviewInner() {
   captionsRef.current = captions
   const reconnectingRef = useRef(false)
 
-  const pushCaption = useCallback((role: Line['role'], text: string) => {
+  const pushCaption = useCallback((role: Line['role'], text: string, at = Date.now()) => {
     const t = text.trim()
     if (!t) return
     setCaptions((prev) => {
       const last = prev[prev.length - 1]
       // dedupe the echo of a typed message
       if (last && last.role === role && last.text === t) return prev
-      const next = [...prev, { role, text: t, at: Date.now() }]
-      try {
-        sessionStorage.setItem(CAP_KEY, JSON.stringify(next))
-      } catch {}
-      return next
+      return saveCaptions([...prev, { role, text: t, at }])
     })
   }, [])
 
@@ -257,13 +272,45 @@ function InterviewInner() {
       if (!endingRef.current) set({ error: `Voice connection problem: ${message}` })
     },
     onMessage: (m) => {
-      pushCaption(m.role === 'user' ? 'learner' : 'client', m.message)
-      if (m.role === 'agent') setRevealCount(2)
+      if (m.role === 'user') {
+        // Silence shows up as "..."; it isn't a question.
+        if (!isSilenceFiller(m.message)) pushCaption('learner', m.message)
+        return
+      }
+      const at = Date.now()
+      pushCaption('client', m.message, at)
+      setReveal({ at, count: 0 })
+    },
+    // When the learner interrupts, Maya only said part of her line: show what she actually said.
+    onAgentResponseCorrection: (c) => {
+      const corrected = c.corrected_agent_response?.trim()
+      if (!corrected) return
+      setCaptions((prev) => {
+        const i = prev.map((l) => l.role).lastIndexOf('client')
+        if (i < 0 || prev[i].text === corrected) return prev
+        const next = [...prev]
+        next[i] = { ...next[i], text: corrected }
+        return saveCaptions(next)
+      })
     },
   })
 
-  const speaking = conv.status === 'connected' && conv.isSpeaking
   const connected = conv.status === 'connected'
+  const rawSpeaking = connected && conv.isSpeaking
+  const convRef = useRef(conv)
+  convRef.current = conv
+
+  // Smooth over the brief "not speaking" gaps between sentences so the status, halo, captions
+  // and the 3D Maya don't flicker mid-answer.
+  const [speaking, setSpeaking] = useState(false)
+  useEffect(() => {
+    if (rawSpeaking) {
+      setSpeaking(true)
+      return
+    }
+    const id = setTimeout(() => setSpeaking(false), SPEAKING_HOLD_MS)
+    return () => clearTimeout(id)
+  }, [rawSpeaking])
 
   // Mirror call state into the store for the 3D room.
   useEffect(() => {
@@ -271,13 +318,14 @@ function InterviewInner() {
   }, [connected, speaking, set])
   useEffect(() => () => set({ voiceLive: false, mayaSpeaking: false }), [set])
 
-  // Reveal Maya's newest words two at a time every 330ms while she speaks.
+  // Reveal Maya's newest line at about her speaking pace while she talks; show it all once she stops.
+  // A new line restarts the reveal (onMessage); pauses between sentences don't.
   useEffect(() => {
     if (!speaking) {
-      setRevealCount(null)
+      setReveal(null)
       return
     }
-    const id = setInterval(() => setRevealCount((n) => (n === null ? 2 : n + 2)), 330)
+    const id = setInterval(() => setReveal((r) => (r ? { ...r, count: r.count + 1 } : r)), REVEAL_MS)
     return () => clearInterval(id)
   }, [speaking])
 
@@ -290,17 +338,18 @@ function InterviewInner() {
       raf = requestAnimationFrame(loop)
       if (t - last < 80) return
       last = t
+      const c = convRef.current
       let v = 0
       try {
-        v = conv.getInputVolume()
+        v = c.getInputVolume()
       } catch {}
       if (!muted && v > 0.06) lastVoiceAt.current = Date.now()
       setMicLevel(v)
-      setUserTalking(!muted && Date.now() - lastVoiceAt.current < 700 && !conv.isSpeaking)
+      setUserTalking(!muted && Date.now() - lastVoiceAt.current < 700 && !c.isSpeaking)
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [connected, muted, conv])
+  }, [connected, muted])
 
   const questions = phase === 'typed' ? iv.turns.filter((t) => t.role === 'learner').length : captions.filter((l) => l.role === 'learner').length
   const elapsed = useElapsed(iv.startedAt, phase === 'live' || phase === 'typed')
@@ -631,7 +680,7 @@ function InterviewInner() {
               DeployHER is reviewing your conversation…
             </div>
           ) : (
-            <Transcript lines={lines} revealCount={revealCount} speaking={speaking} learnerTalking={voicePhase && userTalking} thinking={(phase === 'typed' && asking) || statusText === 'Maya is thinking…'} />
+            <Transcript lines={lines} reveal={reveal} speaking={speaking} learnerTalking={voicePhase && userTalking} thinking={(phase === 'typed' && asking) || statusText === 'Maya is thinking…'} />
           )}
           {(phase === 'typed' || connected) && !(phase === 'ending' || ending) && (
             <form
