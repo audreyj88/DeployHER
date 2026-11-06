@@ -117,7 +117,7 @@ function Hair({ style, color }: { style: HairStyle; color: string }) {
   }
 }
 
-/** Head with face, hair and optional gold studs. Origin at head centre. */
+/** Head with face, hair and optional gold studs. Origin at head center. */
 export const Head = forwardRef<THREE.Group, { look: Look; mouthRef?: React.Ref<THREE.Mesh> }>(function Head({ look, mouthRef }, ref) {
   return (
     <group ref={ref}>

@@ -14,7 +14,7 @@ export const HUES: Record<PlaceId, { rgb: string; a: number }> = {
   report: { rgb: '66, 42, 8', a: 0.32 },
 }
 
-/** Centred card that rises out of the room, with a vignette in the room's hue. */
+/** Centered card that rises out of the room, with a vignette in the room's hue. */
 export function CardShell({ place, className = '', children, onClose, style }: { place: PlaceId; className?: string; children: ReactNode; onClose?: () => void; style?: CSSProperties }) {
   const [shown, setShown] = useState(false)
   useEffect(() => {

@@ -49,7 +49,7 @@ export function strokeIcon(g: CanvasRenderingContext2D, icon: IconNode, x: numbe
 
 const esc = (v: unknown) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 
-/** SVG markup for a Lucide icon, coloured with currentColor. */
+/** SVG markup for a Lucide icon, colored with currentColor. */
 export function iconSvg(icon: IconNode, size = 14, strokeWidth = 2.5): string {
   const body = icon.map(([tag, a]) => `<${tag} ${Object.entries(a).map(([k, v]) => `${k}="${esc(v)}"`).join(' ')}/>`).join('')
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-0.15em">${body}</svg>`

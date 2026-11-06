@@ -70,7 +70,7 @@ export function SidePanel() {
   const set = useGame((s) => s.set)
   const [shown, setShown] = useState<PlaceId | null>(panel)
   const [open, setOpen] = useState(false)
-  // The Coffee Break feedback can be pulled out of the side panel into a centred modal.
+  // The Coffee Break feedback can be pulled out of the side panel into a centered modal.
   const [expanded, setExpanded] = useState(false)
   const canExpand = shown === 'debrief'
   const isExpanded = expanded && canExpand && open
@@ -119,7 +119,7 @@ export function SidePanel() {
             {canExpand && (
               <button
                 onClick={() => setExpanded((x) => !x)}
-                aria-label={isExpanded ? 'Shrink back to the side panel' : 'Expand to the centre of the screen'}
+                aria-label={isExpanded ? 'Shrink back to the side panel' : 'Expand to the center of the screen'}
                 title={isExpanded ? 'Shrink to side panel' : 'Expand'}
                 className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold text-slate-600 hover:bg-black/5"
               >

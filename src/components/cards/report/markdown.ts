@@ -41,7 +41,7 @@ export function buildMarkdown(s: SessionView): string {
   out.push('', '## Roles to explore', '', CAREERS_INTRO, '')
   for (const c of CAREERS) out.push(`- ${c}`)
   out.push('', CAREERS_TECHNICAL)
-  out.push('', `*${CAVEAT} All people, organisations and applicants are fictional. ${new Date(r.generatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}*`, '')
+  out.push('', `*${CAVEAT} All people, organizations and applicants are fictional. ${new Date(r.generatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}*`, '')
   return out.join('\n')
 }
 

@@ -100,7 +100,7 @@ ${factText}
 
 Rules:
 - Grade only what the consultant actually asked and did in the transcript. Judge the substance of the questions.
-- Never penalise style, accent, fluency, grammar, transcription errors or length.
+- Never penalize style, accent, fluency, grammar, transcription errors or length.
 - For each dimension cite evidence: the turn id and a verbatim quote of 3–15 consecutive words copied exactly from that turn. Use the consultant's turns whenever possible. If there is no evidence, give 0 and cite nothing.
 - discoveredFacts: list a fact only if one of Maya's replies (not the scripted opener) actually disclosed it, with that reply's turn id.
 - strengths, improvements, betterQuestions: at most 3 each, short, second person ("You asked…"). betterQuestions are questions she could ask next time, written as the question itself.

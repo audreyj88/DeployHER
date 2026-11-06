@@ -1,5 +1,5 @@
 'use client'
-// Twelve lamp posts with room-coloured banners, and six plaza benches.
+// Twelve lamp posts with room-colored banners, and six plaza benches.
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { useEffect, useMemo, useRef } from 'react'
@@ -19,7 +19,7 @@ export function PlazaFurniture() {
       for (const side of [-1, 1]) {
         const x = ux * 10.4 + -uz * 1.95 * side
         const z = uz * 10.4 + ux * 1.95 * side
-        // arm points toward the path centre
+        // arm points toward the path center
         out.push({ x, z, accent: p.accent, rot: Math.atan2(uz * side, -ux * side), phase: i * 1.3 + side })
       }
     })

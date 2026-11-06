@@ -10,7 +10,7 @@ export const STATUS_META: Record<SkillStatus, { label: string; color: string; gl
   not_assessed: { label: 'Not assessed', color: '#94A3B8', glow: 0.12, rung: 'Not assessed' },
 }
 
-/** Lectern/book colours in the library. */
+/** Lectern/book colors in the library. */
 export const BOOK_COLOR: Record<SkillStatus, string> = {
   demonstrated_independently: '#22C55E',
   demonstrated_with_help: '#14B8A6',

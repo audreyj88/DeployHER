@@ -1,5 +1,5 @@
 'use client'
-// Small reusable props (K). Positions are floor-centre, room-local.
+// Small reusable props (K). Positions are floor-center, room-local.
 import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
 import * as THREE from 'three'

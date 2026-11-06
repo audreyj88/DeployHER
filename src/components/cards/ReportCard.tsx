@@ -462,7 +462,7 @@ function Keep({ s }: { s: SessionView }) {
           )}
         </div>
       </div>
-      <p className="mt-4 text-[11.5px] italic text-stone-500">{CAVEAT} All people, organisations, numbers and applicants are fictional.</p>
+      <p className="mt-4 text-[11.5px] italic text-stone-500">{CAVEAT} All people, organizations, numbers and applicants are fictional.</p>
     </div>
   )
 }

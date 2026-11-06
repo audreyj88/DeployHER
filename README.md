@@ -1,6 +1,6 @@
 # DeployHER
 
-**Closing the gender gap in the AI economy.** DeployHER is a playable AI-deployment apprenticeship set in a walkable, toy-like 3D campus.
+**Closing the gender gap in the AI economy.** DeployHER is a playable simulation of an AI-deployment apprenticeship, set in a walkable 3D campus.
 
 You walk six rooms arranged in a ring around a central plaza. Each room is one step of a client engagement for **Next Chapter**, a fictional nonprofit run by **Maya Chen** that helps women return to paid work after caregiving breaks:
 
@@ -13,9 +13,7 @@ You walk six rooms arranged in a ring around a central plaza. Each room is one s
 | 5 | Launch Pad | Decide whether, and how, to roll it out |
 | 6 | Skills Report | Get an honest summary of what you practiced and showed |
 
-**Core principle:** code computes every score, verdict and skill status. The LLM is used only to role-play Maya, to act as the agent under test, or to put results that code already computed into words.
-
-All people, organisations, numbers and applicants are fictional. This is an introductory simulation, not a professional certification.
+All people, organizations, numbers and applicants are fictional. This is an introductory simulation, not a professional certification.
 
 ## Running it
 
@@ -35,7 +33,7 @@ ELEVENLABS_API_KEY=...
 # ELEVENLABS_VOICE_ID=   (optional: override the voice)
 ```
 
-- **Without an Anthropic key:** setup, rollout feedback and the report use clearly labelled deterministic fallbacks. The interview, grading and the lab show retryable errors and never fake results.
+- **Without an Anthropic key:** setup, rollout feedback and the report use clearly labeled deterministic fallbacks. The interview, grading and the lab show retryable errors and never fake results.
 - **Without an ElevenLabs key:** the interview is typed only.
 - **The voice agent:** on the first voice interview, the server creates Maya's ElevenLabs agent. It updates the agent whenever its config changes, and caches the agent ID in `.sessions/`.
 

@@ -238,7 +238,7 @@ export function Gate({ id, accent, locked }: { id: PlaceId; accent: string; lock
 // ---------------- Status board ----------------
 export interface BoardData {
   bars: { v: number; color?: string }[] // v in 0..1
-  dots?: string[] // colours
+  dots?: string[] // colors
   busy?: boolean
 }
 

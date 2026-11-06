@@ -58,7 +58,7 @@ function exitPoints(id: PlaceId, x: number, z: number, final: number): P2[] {
   return out
 }
 
-/** walkOut: around the centre if deep inside, then local (0, 5.0), then (0, 8.8). */
+/** walkOut: around the center if deep inside, then local (0, 5.0), then (0, 8.8). */
 export function planOut(x: number, z: number): P2[] {
   const id = roomAt(x, z)
   if (!id) return []
@@ -80,7 +80,7 @@ export function planToRoom(x: number, z: number, target: PlaceId, extraLocal: P2
   if (cur === target) {
     const [lx, lz] = worldToLocal(target, x, z)
     if (extraLocal.length) {
-      // already inside: go straight to the extra points (detour around the centre if needed)
+      // already inside: go straight to the extra points (detour around the center if needed)
       if (lz < 1.0 && Math.abs(lx) < 3.2 && Math.abs(extraLocal[0][0]) > 2) pts.push(L(target, Math.sign(extraLocal[0][0]) * 2.6, 1.0))
       return [...pts, ...extraLocal.map(([a, b]) => L(target, a, b))]
     }

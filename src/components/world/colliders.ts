@@ -73,7 +73,7 @@ function pushOutBox(px: number, pz: number, r: number, b: Box): [number, number]
     nlx = qx + (ox / d) * r
     nlz = qz + (oz / d) * r
   } else {
-    // centre inside the box: push out along the shallowest axis
+    // center inside the box: push out along the shallowest axis
     const ex = b.hw - Math.abs(lx)
     const ez = b.hd - Math.abs(lz)
     if (ex < ez) {

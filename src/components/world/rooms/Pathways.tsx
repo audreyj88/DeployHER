@@ -1,5 +1,5 @@
 'use client'
-// Next Chapter (Discover): a warm brick community career centre. Not the glass shell.
+// Next Chapter (Discover): a warm brick community career center. Not the glass shell.
 import { RoundedBox } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useLayoutEffect, useMemo, useRef } from 'react'
@@ -143,7 +143,7 @@ function signTextures() {
     g.fillText('Next Chapter', 132, 70)
     g.fillStyle = C.teal
     g.font = '600 22px system-ui, sans-serif'
-    g.fillText('Return-to-work centre', 134, 102)
+    g.fillText('Return-to-work center', 134, 102)
   })
   const inside = canvasTex('pf:sign:in', 512, 128, (g, w, h) => {
     const sky = g.createLinearGradient(0, 0, 0, h)

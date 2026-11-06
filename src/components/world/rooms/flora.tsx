@@ -9,7 +9,7 @@ export const GH_FLOWERS = ['#F472B6', '#FB7185', '#FBBF24', '#C084FC', '#FFFFFF'
 const dummy = new THREE.Object3D()
 const col = new THREE.Color()
 
-/** Instanced flowers scattered over a rectangle (x, z centre; w × d) at height y. */
+/** Instanced flowers scattered over a rectangle (x, z center; w × d) at height y. */
 export function FlowerPatch({ x, z, w, d, y = 0, count, seed = 1, colors = GH_FLOWERS, stem = 0.24, head = 0.07 }: { x: number; z: number; w: number; d: number; y?: number; count: number; seed?: number; colors?: string[]; stem?: number; head?: number }) {
   const heads = useRef<THREE.InstancedMesh>(null)
   const stems = useRef<THREE.InstancedMesh>(null)

@@ -185,7 +185,7 @@ function GrowingPlant({ pos, color, stage, thinking, index }: { pos: [number, nu
       <mesh position-y={0.1} scale={[1, 0.7, 0.8]} material={seedMat}>
         <sphereGeometry args={[0.06, 10, 8]} />
       </mesh>
-      {/* row marker with a tag in this strength's colour */}
+      {/* row marker with a tag in this strength's color */}
       <group position={[0.3, 0, 0.12]} rotation-z={-0.08}>
         <mesh position-y={0.2} castShadow>
           <boxGeometry args={[0.035, 0.42, 0.02]} />

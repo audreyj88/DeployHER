@@ -16,7 +16,7 @@ export const camInfo = {
   z: 36,
 }
 
-/** Spawn: on the plaza 2.7 from centre toward the Greenhouse, facing it. */
+/** Spawn: on the plaza 2.7 from center toward the Greenhouse, facing it. */
 export function spawnPoint() {
   const a = (placeById('setup').angleDeg * Math.PI) / 180
   const x = Math.cos(a) * 2.7

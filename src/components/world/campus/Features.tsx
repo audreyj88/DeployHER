@@ -9,7 +9,7 @@ import { polar } from './geo'
 import { reducedMotion, rng } from './rng'
 import { stripeTexture } from './textures'
 
-/** Rotation so local +z faces the campus centre from (x, z). */
+/** Rotation so local +z faces the campus center from (x, z). */
 const faceCentre = (x: number, z: number) => Math.atan2(-x, -z)
 
 function boxCol(id: string, x: number, z: number, w: number, d: number, rot: number) {

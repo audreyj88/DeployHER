@@ -1,6 +1,6 @@
 'use client'
 // Seated person: typing, reading (clipboard on lap) or talking (leans in, gestures).
-// Origin = the chair seat centre on the floor; she faces local +z.
+// Origin = the chair seat center on the floor; she faces local +z.
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import * as THREE from 'three'

@@ -203,7 +203,7 @@ export function CameraRig() {
       g.set({ panned: isPanned })
     }
 
-    // map focus, drifting to the campus centre when zoomed out
+    // map focus, drifting to the campus center when zoomed out
     const drift = smoothstep(zoom, 1.9, 5.2)
     const tx = fx * (1 - drift)
     const tz = fz * (1 - drift)

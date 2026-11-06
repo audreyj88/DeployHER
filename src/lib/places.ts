@@ -53,7 +53,7 @@ export type RoomStatus = 'done' | 'current' | 'locked'
 // Rooms whose door faces south (they sit on the north side of campus: z < 0).
 export const isNorthRow = (id: PlaceId) => placeById(id).angleDeg < 0
 
-// World geometry for a room: centre, door and rotation (door faces plaza).
+// World geometry for a room: center, door and rotation (door faces plaza).
 export const ROOM_W = 16
 export const ROOM_D = 12
 export const DOOR_W = 3.2
@@ -64,7 +64,7 @@ export interface RoomFrame {
   rotY: number // local +z (door) points toward the plaza
   doorX: number
   doorZ: number
-  dirX: number // unit vector from centre toward plaza (= local +z in world)
+  dirX: number // unit vector from center toward plaza (= local +z in world)
   dirZ: number
 }
 
@@ -73,7 +73,7 @@ export function roomFrame(id: PlaceId): RoomFrame {
   const a = (p.angleDeg * Math.PI) / 180
   const ux = Math.cos(a)
   const uz = Math.sin(a)
-  // radius = distance from campus centre to the room centre; door sits 6 closer.
+  // radius = distance from campus center to the room center; door sits 6 closer.
   const cx = ux * p.radius
   const cz = uz * p.radius
   const dirX = -ux

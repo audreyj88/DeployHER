@@ -50,10 +50,10 @@ export function arcPoints(r: number, a0: number, a1: number, n: number): [number
 
 export const TRACK_R = 4.8
 
-/** Distance from campus centre to a room's door. */
+/** Distance from campus center to a room's door. */
 export const doorDist = (id: PlaceId) => PLACES.find((p) => p.id === id)!.radius - 6
 
-/** A point along a room's axis at distance `r` from the campus centre. */
+/** A point along a room's axis at distance `r` from the campus center. */
 export function onAxis(id: PlaceId, r: number): [number, number] {
   const a = PLACES.find((p) => p.id === id)!.angleDeg
   return polar(r, a)

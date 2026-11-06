@@ -72,7 +72,7 @@ export async function deleteSession() {
   jar.delete(COOKIE)
 }
 
-// Serialise mutations per session so concurrent requests don't clobber each other.
+// Serialize mutations per session so concurrent requests don't clobber each other.
 const locks = new Map<string, Promise<unknown>>()
 export async function withSession<T>(fn: (s: Session) => Promise<T> | T): Promise<{ session: Session; result: T }> {
   const s0 = await loadSession(true)

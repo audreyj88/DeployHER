@@ -273,7 +273,7 @@ export function LaunchPad() {
     bars: (decision?.metrics ?? []).map((m) => ({ v: m === 'time_saved' ? 1 : 0.7, color: m === 'time_saved' ? '#22C55E' : ACCENT })),
     busy: talk.coach,
   }
-  // North-row layout: counter centred on its people at x -0.8, z -2.45; staff at z -3.35 facing the door.
+  // North-row layout: counter centered on its people at x -0.8, z -2.45; staff at z -3.35 facing the door.
   useColliders(ID, [
     { id: 'pad', x: PAD.x, z: PAD.z, r: PAD.r + 0.1 },
     { id: 'gantry', x: PAD.x - 1.75, z: PAD.z - 0.3, w: 0.7, d: 0.7 },
