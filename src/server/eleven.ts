@@ -1,0 +1,125 @@
+import 'server-only'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import crypto from 'node:crypto'
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
+import type { Turn } from '@/lib/types'
+import { MAYA_PERSONA, OPENER, VOICE_RULES } from './scenario'
+
+const CACHE = path.join(process.cwd(), '.sessions', 'eleven-agent.json')
+export const BELLA = 'hpp4J3VqNfWAUOO0d1Us'
+export const MAX_RECONNECTS = 6
+
+let client: ElevenLabsClient | null = null
+function eleven() {
+  if (!process.env.ELEVENLABS_API_KEY) throw new Error('ElevenLabs is not configured on this server.')
+  client ??= new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY })
+  return client
+}
+
+function agentConfig() {
+  return {
+    name: 'DeployHER · Maya Chen (Pathways Forward)',
+    tags: ['deployher'],
+    conversationConfig: {
+      agent: {
+        firstMessage: '{{opening}}',
+        language: 'en',
+        dynamicVariables: { dynamicVariablePlaceholders: { opening: OPENER } },
+        prompt: {
+          prompt: `${MAYA_PERSONA}\n${VOICE_RULES}`,
+          llm: 'claude-sonnet-5-5',
+          temperature: 0.6,
+          maxTokens: 400,
+        },
+      },
+      tts: {
+        modelId: 'eleven_v4_turbo',
+        voiceId: process.env.ELEVENLABS_VOICE_ID || BELLA,
+        expressiveMode: true,
+      },
+      turn: {
+        turnEagerness: 'normal',
+        speculativeTurn: true,
+      },
+      conversation: { maxDurationSeconds: 900 },
+    },
+    platformSettings: {
+      auth: { enableAuth: true },
+      privacy: { recordVoice: false, deleteAudio: true, retentionDays: 30 },
+    },
+  }
+}
+
+const configHash = () => crypto.createHash('sha256').update(JSON.stringify(agentConfig())).digest('hex').slice(0, 16)
+
+let syncing: Promise<string> | null = null
+
+/** Create the Maya agent once, and update it whenever its config changes. */
+export function ensureAgent(): Promise<string> {
+  syncing ??= (async () => {
+    const hash = configHash()
+    let cached: { agentId: string; hash: string } | null = null
+    try {
+      cached = JSON.parse(await fs.readFile(CACHE, 'utf8'))
+    } catch {}
+    const envId = process.env.ELEVENLABS_AGENT_ID
+    const agentId = envId || cached?.agentId
+    const cfg = agentConfig() as never
+    if (agentId) {
+      if (cached?.agentId !== agentId || cached.hash !== hash) {
+        await eleven().conversationalAi.agents.update(agentId, cfg)
+      }
+      await writeCache({ agentId, hash })
+      return agentId
+    }
+    const res = await eleven().conversationalAi.agents.create(cfg)
+    await writeCache({ agentId: res.agentId, hash })
+    return res.agentId
+  })().finally(() => {
+    syncing = null
+  })
+  return syncing
+}
+
+async function writeCache(v: { agentId: string; hash: string }) {
+  await fs.mkdir(path.dirname(CACHE), { recursive: true })
+  await fs.writeFile(CACHE, JSON.stringify(v))
+}
+
+export async function conversationToken() {
+  const agentId = await ensureAgent()
+  const res = await eleven().conversationalAi.conversations.getWebrtcToken({ agentId })
+  return res.token
+}
+
+export const stripTags = (s: string) => s.replace(/\[[a-z][a-z ]{0,20}\]/gi, '').replace(/\s{2,}/g, ' ').trim()
+
+/** Fetch transcripts for every conversation segment, strip audio tags, merge consecutive lines. */
+export async function fetchTranscript(conversationIds: string[]): Promise<{ role: Turn['role']; text: string }[]> {
+  const lines: { role: Turn['role']; text: string }[] = []
+  for (const id of conversationIds) {
+    let conv = await eleven().conversationalAi.conversations.get(id)
+    // Transcripts can lag a moment after the session closes.
+    for (let i = 0; i < 4 && conv.status !== 'done' && conv.status !== 'failed'; i++) {
+      await new Promise((r) => setTimeout(r, 1200))
+      conv = await eleven().conversationalAi.conversations.get(id)
+    }
+    for (const t of conv.transcript ?? []) {
+      const text = stripTags(t.message ?? '')
+      if (!text) continue
+      lines.push({ role: t.role === 'user' ? 'learner' : 'client', text })
+    }
+  }
+  return mergeLines(lines)
+}
+
+export function mergeLines(lines: { role: Turn['role']; text: string }[]) {
+  const out: { role: Turn['role']; text: string }[] = []
+  for (const l of lines) {
+    const last = out[out.length - 1]
+    if (last && last.role === l.role) last.text = `${last.text} ${l.text}`.trim()
+    else out.push({ ...l })
+  }
+  return out
+}
