@@ -7,6 +7,7 @@ import type { Session, SessionView } from '@/lib/types'
 import { stageIndex } from '@/lib/places'
 import { BRIEF, FACTS } from './scenario'
 import { hasAnthropic, hasVoice } from './ai'
+import { voiceCreditsKnownOk } from './eleven'
 
 const DIR = path.join(process.cwd(), '.sessions')
 const COOKIE = 'dh_sid'
@@ -108,6 +109,6 @@ export function toView(s: Session): SessionView {
     brief: briefUnlocked(s)
       ? { ...BRIEF, facts: FACTS.map((f) => ({ id: f.id, label: f.label, text: f.fact, discovered: discovered.has(f.id) })) }
       : null,
-    ai: { anthropic: hasAnthropic(), voice: hasVoice() },
+    ai: { anthropic: hasAnthropic(), voice: hasVoice() && voiceCreditsKnownOk() },
   }
 }

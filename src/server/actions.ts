@@ -8,7 +8,7 @@ import { computeSkills } from '@/lib/report'
 import { draftStrengths, PRACTICE_TODAY } from '@/lib/skills-map'
 import type { Session, Turn } from '@/lib/types'
 import { errMessage, hasAnthropic } from './ai'
-import { conversationToken, fetchTranscript, MAX_RECONNECTS, mergeLines, stripTags } from './eleven'
+import { conversationToken, VoiceUnavailableError, fetchTranscript, MAX_RECONNECTS, mergeLines, stripTags } from './eleven'
 import { isSilenceFiller } from '@/lib/voice'
 import { addTurn, ensureOpener, gradeTranscript, learnerCount, mayaTypedReply, MAX_QUESTIONS, MIN_QUESTIONS, transcriptHash } from './interview'
 import { runAll } from './lab'
@@ -168,6 +168,7 @@ export async function runAction(s: Session, a: Action): Promise<Record<string, u
         s.interview.startedAt ??= Date.now()
         return { token, opening: a.reconnect ? RECONNECT_LINE : OPENER }
       } catch (e) {
+        if (e instanceof VoiceUnavailableError) throw new ActionError(e.message, 503)
         throw new ActionError(`Couldn’t reach the voice service: ${errMessage(e)}`, 502)
       }
     }

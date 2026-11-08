@@ -90,7 +90,42 @@ async function writeCache(v: { agentId: string; hash: string }) {
   await fs.writeFile(CACHE, JSON.stringify(v))
 }
 
+// ---- Credit check -------------------------------------------------------
+// When the ElevenLabs account runs out of credits, calls connect and are dropped at once
+// ("agent not available"). Check first so learners get a clear message instead.
+
+export class VoiceUnavailableError extends Error {}
+
+let quota: { ok: boolean; at: number; resetsAt: number | null } | null = null
+
+/** True if voice credits remain (or the check itself fails — never block on an unknown). Cached 60s. */
+export async function voiceCreditsOk(): Promise<boolean> {
+  if (!process.env.ELEVENLABS_API_KEY) return false
+  if (quota && Date.now() - quota.at < 60_000) return quota.ok
+  try {
+    const sub = await eleven().user.subscription.get()
+    const used = sub.characterCount ?? 0
+    const limit = sub.characterLimit ?? Infinity
+    // A reply costs a few hundred characters; below that, a call can't really start.
+    quota = { ok: limit - used > 300, at: Date.now(), resetsAt: sub.nextCharacterCountResetUnix ?? null }
+  } catch {
+    quota = { ok: true, at: Date.now(), resetsAt: null }
+  }
+  return quota.ok
+}
+
+/** Last known credit state, without a network call (for the session view). */
+export const voiceCreditsKnownOk = () => quota?.ok ?? true
+
+function resetText() {
+  if (!quota?.resetsAt) return ''
+  const d = new Date(quota.resetsAt * 1000)
+  return ` They reset on ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.`
+}
+
 export async function conversationToken() {
+  if (!(await voiceCreditsOk()))
+    throw new VoiceUnavailableError(`Maya’s voice is unavailable right now: this server’s ElevenLabs account has used up its voice credits.${resetText()} Switch to typing to keep going.`)
   const agentId = await ensureAgent()
   const res = await eleven().conversationalAi.conversations.getWebrtcToken({ agentId })
   return res.token

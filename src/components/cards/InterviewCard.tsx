@@ -614,7 +614,7 @@ function InterviewInner() {
                   </div>
                 </>
               )}
-              {phase === 'dropped' && (
+              {phase === 'dropped' && voiceOk && (
                 <div className="text-center">
                   <p className="mb-2 text-[13px] text-white/80">The connection dropped. Maya’s still here.</p>
                   <Btn accent="#14B8A6" onClick={() => startVoice(true)}>
@@ -623,6 +623,14 @@ function InterviewInner() {
                   <button onClick={switchToTyping} className="mt-2 block w-full text-[12px] text-white/60 underline underline-offset-2 hover:text-white">
                     Switch to typing
                   </button>
+                </div>
+              )}
+              {phase === 'dropped' && !voiceOk && (
+                <div className="text-center">
+                  <p className="mb-2 text-[13px] text-white/80">Maya’s voice isn’t available right now. You can carry on the conversation with her by typing.</p>
+                  <Btn accent="#14B8A6" onClick={switchToTyping}>
+                    Continue by typing
+                  </Btn>
                 </div>
               )}
             </div>

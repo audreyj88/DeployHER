@@ -6,6 +6,7 @@ import type { z } from 'zod'
 export const MODEL_ID = () => process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5'
 export const hasAnthropic = () => Boolean(process.env.ANTHROPIC_API_KEY)
 export const hasVoice = () => Boolean(process.env.ELEVENLABS_API_KEY)
+// Note: the session view also folds in the ElevenLabs credit check (see store.toView).
 
 /** Claude 5.x models reject sampling temperature; keep the spec's values for models that accept them. */
 const temp = (t: number) => (/claude-(sonnet|opus|haiku|fable)-5/.test(MODEL_ID()) ? {} : { temperature: t })
